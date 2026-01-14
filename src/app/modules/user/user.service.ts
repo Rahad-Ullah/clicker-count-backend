@@ -105,28 +105,28 @@ const getUserProfileFromDB = async (userId: string) => {
 //get single user by id
 const getSingleUserFromDB = async (
   id: string,
-  currentUserId: string
+  query: Record<string, unknown>
 ): Promise<Partial<IUser>> => {
-  // get current user
-  const currentUser = await User.findById(currentUserId).lean();
-  const isExistUser = await User.findById(id).lean();
-  if (!isExistUser) {
+  const result = await User.findById(id).lean();
+  if (!result) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
   // calculate and attach distance from me
-  if (currentUser?.location.coordinates && isExistUser.location.coordinates) {
+  if (query.lat && query.lng && result.location.coordinates) {
+    const lat = parseFloat(query.lat as string);
+    const lng = parseFloat(query.lng as string);
     const distance = calculateDistance(
-      currentUser.location.coordinates[1],
-      currentUser.location.coordinates[0],
-      isExistUser.location.coordinates[1],
-      isExistUser.location.coordinates[0]
+      lat,
+      lng,
+      result.location.coordinates[1],
+      result.location.coordinates[0]
     );
 
-    (isExistUser as any).distance = distance;
+    (result as any).distance = distance;
   }
 
-  return isExistUser;
+  return result;
 };
 
 // get all users
