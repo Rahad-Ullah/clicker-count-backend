@@ -98,15 +98,38 @@ const getSingleUserFromDB = async (id: string): Promise<Partial<IUser>> => {
 
 // get all users
 const getAllUsersFromDB = async (query: Record<string, unknown>) => {
-  const userQuery = new QueryBuilder(
-    User.find({ isDeleted: false, role: { $ne: USER_ROLES.SUPER_ADMIN } }),
-    query
-  )
-    .search(['name', 'email'])
-    .filter()
-    .sort()
-    .fields()
-    .paginate();
+    const filter: Record<string, any> = {
+      isDeleted: false,
+      role: { $ne: USER_ROLES.SUPER_ADMIN },
+    };
+    // Nearby search (lat, lng, radius)
+    if (query.lat && query.lng) {
+      const lat = parseFloat(query.lat as string);
+      const lng = parseFloat(query.lng as string);
+      const radiusKm = parseFloat((query.radius as string) || '5'); // radius in kilometers, default to 5km
+      console.log(lat, lng, radiusKm);
+
+      if (!isNaN(lat) && !isNaN(lng) && !isNaN(radiusKm) && radiusKm > 0) {
+        const EARTH_RADIUS_KM = 6378.1;
+        const radiusInRadians = radiusKm / EARTH_RADIUS_KM;
+
+        filter.location = {
+          $geoWithin: {
+            $centerSphere: [[lng, lat], radiusInRadians],
+          },
+        };
+      }
+    }
+
+    const userQuery = new QueryBuilder(
+      User.find(filter).populate('advertiser'),
+      query
+    )
+      .search(['name', 'email'])
+      .filter(['location', 'lat', 'lng', 'radius'])
+      .sort()
+      .fields()
+      .paginate();
 
   const [result, pagination] = await Promise.all([
     userQuery.modelQuery.lean(),
