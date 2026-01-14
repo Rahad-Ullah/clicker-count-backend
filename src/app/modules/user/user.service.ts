@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes';
-import { JwtPayload } from 'jsonwebtoken';
 import ApiError from '../../../errors/ApiError';
 import { emailHelper } from '../../../helpers/emailHelper';
 import { emailTemplate } from '../../../shared/emailTemplate';
@@ -9,6 +8,7 @@ import { IUser } from './user.interface';
 import { User } from './user.model';
 import { USER_ROLES, USER_STATUS } from './user.constant';
 import QueryBuilder from '../../builder/QueryBuilder';
+import { calculateDistance } from '../../../util/calculateDistance';
 
 const createUserToDB = async (payload: Partial<IUser>) => {
   //set role
@@ -86,11 +86,44 @@ const toggleUserStatus = async (id: string) => {
   return result;
 };
 
+// get user profile
+const getUserProfileFromDB = async (userId: string) => {
+  const isExistUser = await User.findById(userId);
+  if (!isExistUser || isExistUser.isDeleted) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+  if (isExistUser.status !== USER_STATUS.ACTIVE) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Your account is inactive or disabled.'
+    );
+  }
+
+  return isExistUser;
+};
+
 //get single user by id
-const getSingleUserFromDB = async (id: string): Promise<Partial<IUser>> => {
-  const isExistUser = await User.isExistUserById(id);
+const getSingleUserFromDB = async (
+  id: string,
+  currentUserId: string
+): Promise<Partial<IUser>> => {
+  // get current user
+  const currentUser = await User.findById(currentUserId).lean();
+  const isExistUser = await User.findById(id).lean();
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  // calculate and attach distance from me
+  if (currentUser?.location.coordinates && isExistUser.location.coordinates) {
+    const distance = calculateDistance(
+      currentUser.location.coordinates[1],
+      currentUser.location.coordinates[0],
+      isExistUser.location.coordinates[1],
+      isExistUser.location.coordinates[0]
+    );
+
+    (isExistUser as any).distance = distance;
   }
 
   return isExistUser;
@@ -98,43 +131,58 @@ const getSingleUserFromDB = async (id: string): Promise<Partial<IUser>> => {
 
 // get all users
 const getAllUsersFromDB = async (query: Record<string, unknown>) => {
-    const filter: Record<string, any> = {
-      isDeleted: false,
-      role: { $ne: USER_ROLES.SUPER_ADMIN },
-    };
-    // Nearby search (lat, lng, radius)
-    if (query.lat && query.lng) {
-      const lat = parseFloat(query.lat as string);
-      const lng = parseFloat(query.lng as string);
-      const radiusKm = parseFloat((query.radius as string) || '5'); // radius in kilometers, default to 5km
-      console.log(lat, lng, radiusKm);
+  const filter: Record<string, any> = {
+    isDeleted: false,
+    role: { $ne: USER_ROLES.SUPER_ADMIN },
+  };
+  // Nearby search (lat, lng, radius)
+  if (query.lat && query.lng) {
+    const lat = parseFloat(query.lat as string);
+    const lng = parseFloat(query.lng as string);
+    const radiusKm = parseFloat((query.radius as string) || '5'); // radius in kilometers, default to 5km
 
-      if (!isNaN(lat) && !isNaN(lng) && !isNaN(radiusKm) && radiusKm > 0) {
-        const EARTH_RADIUS_KM = 6378.1;
-        const radiusInRadians = radiusKm / EARTH_RADIUS_KM;
+    if (!isNaN(lat) && !isNaN(lng) && !isNaN(radiusKm) && radiusKm > 0) {
+      const EARTH_RADIUS_KM = 6378.1;
+      const radiusInRadians = radiusKm / EARTH_RADIUS_KM;
 
-        filter.location = {
-          $geoWithin: {
-            $centerSphere: [[lng, lat], radiusInRadians],
-          },
-        };
-      }
+      filter.location = {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radiusInRadians],
+        },
+      };
     }
+  }
 
-    const userQuery = new QueryBuilder(
-      User.find(filter).populate('advertiser'),
-      query
-    )
-      .search(['name', 'email'])
-      .filter(['location', 'lat', 'lng', 'radius'])
-      .sort()
-      .fields()
-      .paginate();
+  const userQuery = new QueryBuilder(
+    User.find(filter).populate('advertiser').lean(),
+    query
+  )
+    .search(['name', 'email'])
+    .filter(['location', 'lat', 'lng', 'radius'])
+    .sort()
+    .fields()
+    .paginate();
 
   const [result, pagination] = await Promise.all([
     userQuery.modelQuery.lean(),
     userQuery.getPaginationInfo(),
   ]);
+
+  // calculate and attach distance from me
+  if (query.lat && query.lng) {
+    const lat = parseFloat(query.lat as string);
+    const lng = parseFloat(query.lng as string);
+    result.forEach((user: any) => {
+      if (user.location.coordinates) {
+        user.distance = calculateDistance(
+          lat,
+          lng,
+          user.location.coordinates[1],
+          user.location.coordinates[0]
+        );
+      }
+    });
+  }
 
   return { result, pagination };
 };
@@ -143,6 +191,7 @@ export const UserService = {
   createUserToDB,
   updateProfileToDB,
   toggleUserStatus,
+  getUserProfileFromDB,
   getSingleUserFromDB,
   getAllUsersFromDB,
 };

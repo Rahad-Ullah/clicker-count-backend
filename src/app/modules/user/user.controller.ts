@@ -60,7 +60,7 @@ const toggleUserStatus = catchAsync(async (req: Request, res: Response) => {
 
 // get profile
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
-  const result = await UserService.getSingleUserFromDB(req.user.id);
+  const result = await UserService.getUserProfileFromDB(req.user.id);
 
   sendResponse(res, {
     success: true,
@@ -72,7 +72,10 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 
 // get single user by id
 const getUserById = catchAsync(async (req: Request, res: Response) => {
-  const result = await UserService.getSingleUserFromDB(req.params.id);
+  const result = await UserService.getSingleUserFromDB(
+    req.params.id,
+    req.user.id
+  );
 
   sendResponse(res, {
     success: true,
