@@ -56,11 +56,9 @@ const userSchema = new Schema<IUser, UserModal>(
       type: {
         type: String,
         enum: ['Point'],
-        required: true,
       },
       coordinates: {
         type: [Number], // [longitude, latitude]
-        required: true,
       },
     },
     advertiser: {
