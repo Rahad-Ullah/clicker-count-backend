@@ -4,6 +4,7 @@ import { User } from '../user/user.model';
 import { IPost } from './post.interface';
 import { Post } from './post.model';
 import unlinkFile from '../../../shared/unlinkFile';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 // -------------- create post --------------
 const createPostToDB = async (payload: IPost): Promise<IPost> => {
@@ -66,8 +67,33 @@ const getSinglePostFromDB = async (id: string): Promise<IPost> => {
   return result!;
 };
 
+// -------------- get by user id --------------
+const getPostsByUserId = async (
+  userId: string,
+  query: Record<string, unknown>
+) => {
+  const postQuery = new QueryBuilder(
+    Post.find({ user: userId, isDeleted: false }).populate(
+      'user',
+      'name email image'
+    ),
+    query
+  )
+    .filter()
+    .paginate()
+    .sort()
+    .fields();
+
+  const [posts, pagination] = await Promise.all([
+    postQuery.modelQuery.lean(),
+    postQuery.getPaginationInfo(),
+  ]);
+  return { posts, pagination };
+};
+
 export const PostServices = {
   createPostToDB,
   updatePostToDB,
   getSinglePostFromDB,
+  getPostsByUserId,
 };

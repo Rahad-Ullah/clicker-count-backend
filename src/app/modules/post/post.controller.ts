@@ -55,8 +55,36 @@ const getSinglePostById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// ------------- get posts by user id -------------
+const getPostsByUserId = catchAsync(async (req: Request, res: Response) => {
+  const result = await PostServices.getPostsByUserId(req.params.id, req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Posts retrieved successfully',
+    data: result.posts,
+    pagination: result.pagination,
+  });
+});
+
+// ------------ get my posts ------------
+const getMyPosts = catchAsync(async (req: Request, res: Response) => {
+  const result = await PostServices.getPostsByUserId(req.user?.id, req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Posts retrieved successfully',
+    data: result.posts,
+    pagination: result.pagination,
+  });
+});
+
 export const PostController = {
   createPost,
   updatePost,
   getSinglePostById,
+  getPostsByUserId,
+  getMyPosts,
 };

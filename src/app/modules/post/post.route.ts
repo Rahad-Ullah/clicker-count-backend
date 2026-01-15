@@ -27,6 +27,16 @@ router.patch(
 );
 
 // get single post
-router.get('/:id', auth(), PostController.getSinglePostById);
+router.get('/single/:id', auth(), PostController.getSinglePostById);
+
+// get posts by user id
+router.get('/user/:id', auth(), PostController.getPostsByUserId);
+
+// get my posts
+router.get(
+  '/my-posts',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  PostController.getMyPosts
+);
 
 export const postRoutes = router;
