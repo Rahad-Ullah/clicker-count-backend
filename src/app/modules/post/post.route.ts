@@ -39,4 +39,11 @@ router.get(
   PostController.getMyPosts
 );
 
+// get all posts
+router.get(
+  '/',
+  auth(),
+  PostController.getAllPosts
+);
+
 export const postRoutes = router;

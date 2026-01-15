@@ -91,9 +91,58 @@ const getPostsByUserId = async (
   return { posts, pagination };
 };
 
+// -------------- get all posts --------------
+const getAllPostsFromDB = async (query: Record<string, unknown>) => {
+  const filter: Record<string, any> = {
+    isDeleted: false,
+  };
+  // Nearby search (lat, lng, radius)
+  if (query.lat && query.lng) {
+    const lat = parseFloat(query.lat as string);
+    const lng = parseFloat(query.lng as string);
+    const radiusKm = parseFloat((query.radius as string) || '50'); // radius in kilometers, default to 5km
+
+    if (!isNaN(lat) && !isNaN(lng) && !isNaN(radiusKm) && radiusKm > 0) {
+      const EARTH_RADIUS_KM = 6378.1;
+      const radiusInRadians = radiusKm / EARTH_RADIUS_KM;
+
+      filter.location = {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radiusInRadians],
+        },
+      };
+    }
+  }
+  // Date filter
+  if (query.startDate && query.endDate) {
+    filter.createdAt = {
+      $gte: new Date(query.startDate as string),
+      $lte: new Date(query.endDate as string) || new Date(),
+    };
+  }
+
+  const postQuery = new QueryBuilder(
+    Post.find(filter).populate('user', 'name email image').lean(),
+    query
+  )
+    .search(['address'])
+    .filter(['location', 'lat', 'lng', 'radius', 'startDate', 'endDate'])
+    .sort()
+    .fields()
+    .paginate();
+
+  const [data, pagination] = await Promise.all([
+    postQuery.modelQuery.lean(),
+    postQuery.getPaginationInfo(),
+  ]);
+
+  return { data, pagination };
+};
+
 export const PostServices = {
   createPostToDB,
   updatePostToDB,
   getSinglePostFromDB,
   getPostsByUserId,
+  getAllPostsFromDB,
 };

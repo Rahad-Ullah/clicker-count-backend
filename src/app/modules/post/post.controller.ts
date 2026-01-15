@@ -81,10 +81,24 @@ const getMyPosts = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// ------------ get all posts ------------
+const getAllPosts = catchAsync(async (req: Request, res: Response) => {
+  const result = await PostServices.getAllPostsFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Posts retrieved successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
 export const PostController = {
   createPost,
   updatePost,
   getSinglePostById,
   getPostsByUserId,
   getMyPosts,
+  getAllPosts,
 };
