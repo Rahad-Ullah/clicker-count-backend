@@ -43,7 +43,20 @@ const updatePost = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// ------------- get single by id -------------
+const getSinglePostById = catchAsync(async (req: Request, res: Response) => {
+  const result = await PostServices.getSinglePostFromDB(req.params.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Post retrieved successfully',
+    data: result,
+  });
+});
+
 export const PostController = {
   createPost,
   updatePost,
+  getSinglePostById,
 };

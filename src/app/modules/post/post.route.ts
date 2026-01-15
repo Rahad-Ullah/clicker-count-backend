@@ -26,4 +26,7 @@ router.patch(
   PostController.updatePost
 );
 
+// get single post
+router.get('/:id', auth(), PostController.getSinglePostById);
+
 export const postRoutes = router;

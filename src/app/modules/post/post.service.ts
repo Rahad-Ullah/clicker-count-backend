@@ -58,7 +58,16 @@ const updatePostToDB = async (
   return result!;
 };
 
+// -------------- get single post --------------
+const getSinglePostFromDB = async (id: string): Promise<IPost> => {
+  const result = await Post.findById(id)
+    .populate('user', 'name email image')
+    .lean();
+  return result!;
+};
+
 export const PostServices = {
   createPostToDB,
   updatePostToDB,
+  getSinglePostFromDB,
 };
