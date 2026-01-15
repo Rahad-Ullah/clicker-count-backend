@@ -3,6 +3,7 @@ import ApiError from '../../../errors/ApiError';
 import { User } from '../user/user.model';
 import { IPost } from './post.interface';
 import { Post } from './post.model';
+import unlinkFile from '../../../shared/unlinkFile';
 
 // -------------- create post --------------
 const createPostToDB = async (payload: IPost): Promise<IPost> => {
@@ -23,6 +24,41 @@ const createPostToDB = async (payload: IPost): Promise<IPost> => {
   return result;
 };
 
+// -------------- update post --------------
+const updatePostToDB = async (
+  id: string,
+  payload: Partial<IPost> & { newImages?: string[]; removedImages?: string[] }
+): Promise<IPost> => {
+  // check if post exists
+  const existingPost = await Post.findById(id).lean();
+  if (!existingPost) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Post not found');
+  }
+
+  payload.photos = existingPost.photos || [];
+
+  // remove old photos and unlink
+  if (payload?.removedImages && payload.removedImages.length > 0) {
+    const deletedPhotos = existingPost.photos.filter(photo =>
+      payload.removedImages?.includes(photo)
+    );
+    deletedPhotos.forEach(photo => unlinkFile(photo));
+    payload.photos = existingPost.photos.filter(
+      photo => !payload.removedImages?.includes(photo)
+    );
+  }
+
+  // attach new photos
+  if (payload?.newImages && payload.newImages.length > 0) {
+    payload.photos = [...payload.photos, ...payload.newImages];
+  }
+
+  const result = await Post.findByIdAndUpdate(id, payload, { new: true });
+
+  return result!;
+};
+
 export const PostServices = {
   createPostToDB,
+  updatePostToDB,
 };

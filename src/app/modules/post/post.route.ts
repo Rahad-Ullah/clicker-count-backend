@@ -17,4 +17,13 @@ router.post(
   PostController.createPost
 );
 
+// update post
+router.patch(
+  '/update/:id',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  fileUploadHandler(),
+  validateRequest(PostValidations.updatePostValidation),
+  PostController.updatePost
+);
+
 export const postRoutes = router;

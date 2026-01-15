@@ -27,6 +27,19 @@ export const updatePostValidation = z.object({
         .optional(),
       privacy: z.nativeEnum(POST_PRIVACY).optional(),
       image: z.any().optional(),
+      removedImages: z
+        .string()
+        .transform(val => {
+          const parsed = JSON.parse(val);
+          if (
+            Array.isArray(parsed) &&
+            parsed.every(i => typeof i === 'string')
+          ) {
+            return parsed as string[];
+          }
+          throw new Error('Invalid existingImages format');
+        })
+        .optional(),
     })
     .strict(),
 });

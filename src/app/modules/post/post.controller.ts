@@ -22,6 +22,28 @@ const createPost = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// -------------- update post --------------
+const updatePost = catchAsync(async (req: Request, res: Response) => {
+  const images = getMultipleFilesPath(req.files, 'image');
+    const payload = {
+    ...req.body,
+    removedImages: JSON.parse(req.body.removedImages || '[]'),
+  };
+  if (images && images.length > 0) {
+    payload.newImages = images;
+  }
+
+  const result = await PostServices.updatePostToDB(req.params.id, payload);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Post updated successfully',
+    data: result,
+  });
+});
+
 export const PostController = {
   createPost,
+  updatePost,
 };
