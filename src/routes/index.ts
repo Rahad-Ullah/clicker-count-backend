@@ -5,6 +5,7 @@ import { supportRoutes } from '../app/modules/support/support.route';
 import { contactRoutes } from '../app/modules/contact/contact.route';
 import { disclaimerRoutes } from '../app/modules/disclaimer/disclaimer.route';
 import { analyticsRoutes } from '../app/modules/analytics/analytics.route';
+import { postRoutes } from '../app/modules/post/post.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -19,6 +20,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/auth',
     route: AuthRoutes,
+  },
+  {
+    path: '/posts',
+    route: postRoutes,
   },
   {
     path: '/supports',

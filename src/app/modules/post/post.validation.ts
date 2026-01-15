@@ -5,8 +5,8 @@ import { POST_PRIVACY } from './post.constants';
 export const createPostValidation = z.object({
   body: z
     .object({
-      description: z.string().nonempty('Description is required'),
-      clickerType: z.string().nonempty('Clicker type is required'),
+      description: z.string().nonempty('Description cannot be empty'),
+      clickerType: z.string().nonempty('Clicker type cannot be empty'),
       privacy: z.nativeEnum(POST_PRIVACY),
       image: z.any(),
     })
@@ -21,7 +21,10 @@ export const updatePostValidation = z.object({
         .string()
         .nonempty('Description cannot be empty')
         .optional(),
-      clickerType: z.string().nonempty('Clicker type is required').optional(),
+      clickerType: z
+        .string()
+        .nonempty('Clicker type cannot be empty')
+        .optional(),
       privacy: z.nativeEnum(POST_PRIVACY).optional(),
       image: z.any().optional(),
     })

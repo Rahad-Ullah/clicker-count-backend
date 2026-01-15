@@ -33,7 +33,7 @@ const postSchema = new Schema<IPost, PostModel>(
     status: {
       type: String,
       enum: Object.values(POST_STATUS),
-      required: true,
+      default: POST_STATUS.ACTIVE,
     },
     isDeleted: { type: Boolean, default: false },
   },
