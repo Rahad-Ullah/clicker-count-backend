@@ -23,6 +23,13 @@ router.post(
   ChatController.createGroupChat,
 );
 
+// leave chat
+router.patch(
+  '/leave/:id',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  ChatController.leaveChat,
+);
+
 // delete chat
 router.delete('/:id', auth(), ChatController.deleteChat);
 

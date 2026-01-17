@@ -8,6 +8,7 @@ import { IMessage } from '../message/message.interface';
 import { User } from '../user/user.model';
 import { toObjectId } from '../../../util/toObjectId';
 import { USER_ROLES } from '../user/user.constant';
+import { Types } from 'mongoose';
 
 // ---------------- create 1-to-1 chat ----------------
 export const create1To1ChatIntoDB = async (
@@ -126,6 +127,45 @@ const deleteChatFromDB = async (chatId: string, user: JwtPayload) => {
   return result;
 };
 
+// ---------------- leave chat ----------------
+const leaveChatFromDB = async (chatId: string, userId: string) => {
+  // check if the chat exists
+  const chat = await Chat.findOne({ _id: chatId, isDeleted: false });
+  if (!chat) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Chat not found!');
+  }
+
+  // Prevent leaving 1-to-1 chat
+  if (!chat.isGroupChat) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'You cannot leave a 1-to-1 chat!',
+    );
+  }
+
+  // check if the user is a participant
+  const isParticipant = chat.participants.some(p => p.equals(userId));
+  if (!isParticipant) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'You are not a participant of this chat!',
+    );
+  }
+
+  // delete the chat if there is only one participant
+  if (chat.participants.length === 1) {
+    await Chat.findByIdAndUpdate(chatId, { isDeleted: true });
+  }
+
+  const result = await Chat.findByIdAndUpdate(
+    chatId,
+    { $pull: { participants: new Types.ObjectId(userId) } },
+    { new: true },
+  );
+
+  return result;
+};
+
 // ---------------- get single chat by id ----------------
 const getSingleChatFromDB = async (chatId: string, userId: string) => {
   const result = await Chat.findById(chatId).populate(
@@ -211,6 +251,7 @@ const getMyChatsFromDB = async (
 export const ChatServices = {
   create1To1ChatIntoDB,
   createGroupChatIntoDB,
+  leaveChatFromDB,
   deleteChatFromDB,
   getSingleChatFromDB,
   getMyChatsFromDB,
