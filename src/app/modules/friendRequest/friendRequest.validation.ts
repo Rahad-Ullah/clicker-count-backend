@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { FRIEND_REQUEST_STATUS } from './friendRequest.constants';
 
 // create friend request schema
 export const createFriendRequestValidation = z.object({
@@ -11,6 +12,16 @@ export const createFriendRequestValidation = z.object({
     .strict(),
 });
 
+// update friend request schema
+export const updateFriendRequestValidation = z.object({
+  body: z
+    .object({
+      status: z.nativeEnum(FRIEND_REQUEST_STATUS),
+    })
+    .strict(),
+});
+
 export const FriendRequestValidations = {
   createFriendRequestValidation,
+  updateFriendRequestValidation,
 };

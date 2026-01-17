@@ -6,6 +6,7 @@ import { FriendRequest } from './friendRequest.model';
 import { FRIEND_REQUEST_STATUS } from './friendRequest.constants';
 import { Friendship } from '../friendship/friendship.model';
 import QueryBuilder from '../../builder/QueryBuilder';
+import mongoose from 'mongoose';
 
 // --------------- create friend request ---------------
 const createFriendRequest = async (
@@ -48,6 +49,62 @@ const createFriendRequest = async (
   return result;
 };
 
+// ------------- update friend request -------------
+
+const updateFriendRequest = async (
+  id: string,
+  payload: Partial<IFriendRequest>
+): Promise<IFriendRequest> => {
+  const session = await mongoose.startSession();
+
+  try {
+    let updatedRequest: IFriendRequest | null = null;
+
+    await session.withTransaction(async () => {
+      // 1. Check if friend request exists
+      const existingRequest = await FriendRequest.findById(id).session(session);
+
+      if (!existingRequest) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'Friend request not found');
+      }
+
+      // 2. If accepted, create friendship if not exists
+      if (payload.status === FRIEND_REQUEST_STATUS.ACCEPTED) {
+        const existingFriendship = await Friendship.findOne({
+          $or: [
+            { user: existingRequest.sender, friend: existingRequest.receiver },
+            { user: existingRequest.receiver, friend: existingRequest.sender },
+          ],
+        }).session(session);
+
+        if (!existingFriendship) {
+          await Friendship.create(
+            [
+              {
+                user: existingRequest.sender,
+                friend: existingRequest.receiver,
+              },
+            ],
+            { session }
+          );
+        }
+      }
+
+      // 3. Update friend request status
+      updatedRequest = await FriendRequest.findByIdAndUpdate(id, payload, {
+        new: true,
+        session,
+      });
+    });
+
+    return updatedRequest!;
+  } catch (error) {
+    throw error;
+  } finally {
+    session.endSession();
+  }
+};
+
 // ------------- get friend requests by user id -------------
 const getFriendRequestsByUserId = async (
   userId: string,
@@ -73,5 +130,6 @@ const getFriendRequestsByUserId = async (
 
 export const FriendRequestServices = {
   createFriendRequest,
+  updateFriendRequest,
   getFriendRequestsByUserId,
 };

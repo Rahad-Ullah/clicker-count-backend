@@ -15,6 +15,14 @@ router.post(
   FriendRequestController.createFriendRequest
 );
 
+// update friend request
+router.patch(
+  '/update/:id',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  validateRequest(FriendRequestValidations.updateFriendRequestValidation),
+  FriendRequestController.updateFriendRequest
+);
+
 // get friend requests
 router.get(
   '/my-requests',
