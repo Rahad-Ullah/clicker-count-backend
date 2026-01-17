@@ -5,6 +5,13 @@ import { USER_ROLES } from '../user/user.constant';
 
 const router = express.Router();
 
+// unfriend or delete friendship
+router.delete(
+    '/:id',
+    auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+    FriendshipController.unfriend
+);
+
 // get my friends
 router.get(
   '/my-friends',
