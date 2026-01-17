@@ -19,6 +19,23 @@ const createFriendRequest = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get my friend requests
+const getMyFriendRequests = catchAsync(async (req: Request, res: Response) => {
+  const result = await FriendRequestServices.getFriendRequestsByUserId(
+    req.user?.id,
+    req.query
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Friend requests retrieved successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
 export const FriendRequestController = {
   createFriendRequest,
+  getMyFriendRequests,
 };

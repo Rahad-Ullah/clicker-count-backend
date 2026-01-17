@@ -15,4 +15,11 @@ router.post(
   FriendRequestController.createFriendRequest
 );
 
+// get friend requests
+router.get(
+  '/my-requests',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  FriendRequestController.getMyFriendRequests
+);
+
 export const friendRequestRoutes = router;

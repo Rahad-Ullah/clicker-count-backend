@@ -5,6 +5,7 @@ import { IFriendRequest } from './friendRequest.interface';
 import { FriendRequest } from './friendRequest.model';
 import { FRIEND_REQUEST_STATUS } from './friendRequest.constants';
 import { Friendship } from '../friendship/friendship.model';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 // --------------- create friend request ---------------
 const createFriendRequest = async (
@@ -47,6 +48,30 @@ const createFriendRequest = async (
   return result;
 };
 
+// ------------- get friend requests by user id -------------
+const getFriendRequestsByUserId = async (
+  userId: string,
+  query: Record<string, unknown> = { status: FRIEND_REQUEST_STATUS.PENDING }
+) => {
+  const requestQuery = new QueryBuilder(
+    FriendRequest.find({
+      receiver: userId,
+    }).populate('sender', 'name image'),
+    query
+  )
+    .filter()
+    .paginate()
+    .sort()
+    .fields();
+
+  const [data, pagination] = await Promise.all([
+    requestQuery.modelQuery.lean(),
+    requestQuery.getPaginationInfo(),
+  ]);
+  return { data, pagination };
+};
+
 export const FriendRequestServices = {
   createFriendRequest,
+  getFriendRequestsByUserId,
 };
