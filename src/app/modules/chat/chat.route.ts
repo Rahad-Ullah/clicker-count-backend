@@ -44,6 +44,6 @@ router.delete('/:id', auth(), ChatController.deleteChat);
 router.get('/single/:id', auth(), ChatController.getSingleChat);
 
 // get my chats
-router.get('/', auth(), ChatController.getMyChats);
+router.get('/my-chats', auth(), ChatController.getMyChats);
 
 export const ChatRoutes = router;

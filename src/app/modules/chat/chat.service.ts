@@ -4,12 +4,12 @@ import { Chat } from './chat.model';
 import ApiError from '../../../errors/ApiError';
 import { StatusCodes } from 'http-status-codes';
 import { Message } from '../message/message.model';
-import { IMessage } from '../message/message.interface';
 import { User } from '../user/user.model';
 import { toObjectId } from '../../../util/toObjectId';
 import { USER_ROLES, USER_STATUS } from '../user/user.constant';
 import { Types } from 'mongoose';
 import { CHAT_ACCESS_TYPE, CHAT_PRIVACY } from './chat.constant';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 // ---------------- create 1-to-1 chat ----------------
 export const create1To1ChatIntoDB = async (
@@ -253,58 +253,99 @@ const getSingleChatFromDB = async (chatId: string, currentUserId: string) => {
   return chat;
 };
 
-// ---------------- get my chats / get by id ----------------
-const getMyChatsFromDB = async (
+// ---------------- get by user id ----------------
+const getChatsByUserIdFromDB = async (
   user: JwtPayload,
-  query: Record<string, any>,
+  query: Record<string, unknown>,
 ) => {
-  const chats = await Chat.find({ participants: { $in: [user.id] } })
-    .populate({
-      path: 'participants',
-      select: 'name image isDeleted',
-      match: {
-        // isDeleted: false,
-        _id: { $ne: user.id }, // Exclude the current user from the populated participants
-        ...(query?.searchTerm && {
-          name: { $regex: query?.searchTerm, $options: 'i' },
-        }),
-      }, // Apply $regex only if search is valid },
-    })
-    .select('participants updatedAt')
-    .sort('-updatedAt');
+  const searchTerm = (query.searchTerm as string)?.trim();
+  const filter: any = { isDeleted: false, participants: user.id };
 
-  // Filter out chats where no participants match the search (empty participants)
-  const filteredChats = chats?.filter(
-    (chat: any) => chat?.participants?.length > 0,
+  if (searchTerm && query.isGroupChat === 'true') {
+    delete filter.participants;
+    filter.privacy = CHAT_PRIVACY.PUBLIC;
+    filter.$or = [{ name: { $regex: searchTerm, $options: 'i' } }];
+  }
+
+  // 1️. Base query
+  const chatQuery = new QueryBuilder(
+    Chat.find(filter)
+      .populate({
+        path: 'participants',
+        select: 'name image',
+        match: {
+          // _id: { $ne: user.id },
+          ...(searchTerm &&
+            !filter.isGroupChat && {
+              name: { $regex: searchTerm, $options: 'i' },
+            }),
+        },
+      })
+      .populate({
+        path: 'latestMessage',
+        populate: {
+          path: 'sender',
+          select: 'name image',
+        },
+      }),
+    query,
+  )
+    .filter()
+    .sort() // default: -updatedAt
+    .fields()
+    .paginate();
+
+  // 2️. Execute query + pagination info
+  const [chats, pagination] = await Promise.all([
+    chatQuery.modelQuery.lean(),
+    chatQuery.getPaginationInfo(),
+  ]);
+
+  // 3️. Remove chats where search filtered out participants
+  const filteredChats = chats.filter(
+    (chat: any) => chat.participants && chat.participants.length > 0,
   );
 
-  //Use Promise.all to get the last message for each chat
-  const chatList = await Promise.all(
-    filteredChats?.map(async (chat: any) => {
-      const data = chat?.toObject();
-
-      const lastMessage: IMessage | null = await Message.findOne({
-        chat: chat?._id,
-      })
-        .sort({ createdAt: -1 })
-        .select('text image createdAt sender');
-
-      // find unread messages count
-      const unreadCount = await Message.countDocuments({
-        chat: chat?._id,
+  // 4️. Unread counts (only paginated chats)
+  const unreadCounts = await Message.aggregate([
+    {
+      $match: {
+        chat: { $in: filteredChats.map(c => c._id) },
         seenBy: { $nin: [user.id] },
-      });
+      },
+    },
+    {
+      $group: {
+        _id: '$chat',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const unreadMap = new Map(unreadCounts.map(u => [u._id.toString(), u.count]));
+
+  // 5️⃣ Format response (1-to-1 vs group)
+  const data = filteredChats.map((chat: any) => {
+    const unreadCount = unreadMap.get(chat._id.toString()) || 0;
+
+    if (!chat.isGroupChat) {
+      const anotherParticipant = chat.participants[0];
+      const { participants, ...rest } = chat;
 
       return {
-        ...data,
-        participants: data.participants,
-        unreadCount: unreadCount || 0,
-        lastMessage: lastMessage || null,
+        ...rest,
+        anotherParticipant,
+        unreadCount,
       };
-    }),
-  );
+    }
 
-  return chatList;
+    return { ...chat, unreadCount };
+  });
+
+  return {
+    result: data,
+    pagination,
+  };
 };
 
 export const ChatServices = {
@@ -314,5 +355,5 @@ export const ChatServices = {
   leaveChatFromDB,
   deleteChatFromDB,
   getSingleChatFromDB,
-  getMyChatsFromDB,
+  getChatsByUserIdFromDB,
 };
