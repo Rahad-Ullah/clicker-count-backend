@@ -7,8 +7,9 @@ import { Message } from '../message/message.model';
 import { IMessage } from '../message/message.interface';
 import { User } from '../user/user.model';
 import { toObjectId } from '../../../util/toObjectId';
-import { USER_ROLES } from '../user/user.constant';
+import { USER_ROLES, USER_STATUS } from '../user/user.constant';
 import { Types } from 'mongoose';
+import { CHAT_ACCESS_TYPE, CHAT_PRIVACY } from './chat.constant';
 
 // ---------------- create 1-to-1 chat ----------------
 export const create1To1ChatIntoDB = async (
@@ -84,43 +85,50 @@ export const createGroupChatIntoDB = async (payload: IChat) => {
   return result;
 };
 
-// ---------------- delete chat ----------------
-const deleteChatFromDB = async (chatId: string, user: JwtPayload) => {
-  const chat = await Chat.findById(chatId);
+// ---------------- join chat ----------------
+
+const joinChatIntoDB = async (chatId: string, userId: string) => {
+  // 1️. Validate user exists
+  const userExists = await User.exists({
+    _id: userId,
+    isDeleted: false,
+    status: USER_STATUS.ACTIVE,
+  });
+  if (!userExists) {
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      'User does not exist or not active!',
+    );
+  }
+
+  // 2️. Fetch chat
+  const chat = await Chat.findOne({ _id: chatId, isDeleted: false });
   if (!chat) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Chat not found!');
   }
 
-  const isAdmin =
-    user.role === USER_ROLES.ADMIN || user.role === USER_ROLES.SUPER_ADMIN;
-
-  const isAuthor = chat.author.equals(user.id);
-  const isParticipant = chat.participants.some(p => p.equals(user.id));
-
-  // Authorization for non-admin
-  if (!isAdmin) {
-    // Group chat
-    if (chat.isGroupChat) {
-      if (!isAuthor) {
-        throw new ApiError(
-          StatusCodes.UNAUTHORIZED,
-          'You are not authorized to delete this chat!',
-        );
-      }
-    } else {
-      // 1-to-1 chat
-      if (!isParticipant) {
-        throw new ApiError(
-          StatusCodes.UNAUTHORIZED,
-          'You are not authorized to delete this chat!',
-        );
-      }
-    }
+  // 3️. Prevent joining 1-to-1 chat
+  if (!chat.isGroupChat) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'You cannot join a 1-to-1 chat!',
+    );
   }
 
+  // 4️. Already a participant
+  if (chat.participants.some(p => p.equals(userId))) {
+    return chat;
+  }
+
+  // 5️. Join chat with access control
+  if (chat.accessType === CHAT_ACCESS_TYPE.RESTRICTED) {
+    // ! todo: create a join request
+    return;
+  }
+  // join directly for public groups
   const result = await Chat.findByIdAndUpdate(
     chatId,
-    { isDeleted: true },
+    { $addToSet: { participants: new Types.ObjectId(userId) } },
     { new: true },
   );
 
@@ -160,6 +168,49 @@ const leaveChatFromDB = async (chatId: string, userId: string) => {
   const result = await Chat.findByIdAndUpdate(
     chatId,
     { $pull: { participants: new Types.ObjectId(userId) } },
+    { new: true },
+  );
+
+  return result;
+};
+
+// ---------------- delete chat ----------------
+const deleteChatFromDB = async (chatId: string, user: JwtPayload) => {
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Chat not found!');
+  }
+
+  const isAdmin =
+    user.role === USER_ROLES.ADMIN || user.role === USER_ROLES.SUPER_ADMIN;
+
+  const isAuthor = chat.author.equals(user.id);
+  const isParticipant = chat.participants.some(p => p.equals(user.id));
+
+  // Authorization for non-admin
+  if (!isAdmin) {
+    // Group chat
+    if (chat.isGroupChat) {
+      if (!isAuthor) {
+        throw new ApiError(
+          StatusCodes.UNAUTHORIZED,
+          'You are not authorized to delete this chat!',
+        );
+      }
+    } else {
+      // 1-to-1 chat
+      if (!isParticipant) {
+        throw new ApiError(
+          StatusCodes.UNAUTHORIZED,
+          'You are not authorized to delete this chat!',
+        );
+      }
+    }
+  }
+
+  const result = await Chat.findByIdAndUpdate(
+    chatId,
+    { isDeleted: true },
     { new: true },
   );
 
@@ -251,6 +302,7 @@ const getMyChatsFromDB = async (
 export const ChatServices = {
   create1To1ChatIntoDB,
   createGroupChatIntoDB,
+  joinChatIntoDB,
   leaveChatFromDB,
   deleteChatFromDB,
   getSingleChatFromDB,

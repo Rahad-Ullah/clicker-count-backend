@@ -38,6 +38,18 @@ const createGroupChat = catchAsync(
   }
 );
 
+// join chat
+const joinChat = catchAsync(async (req: Request, res: Response) => {
+  const result = await ChatServices.joinChatIntoDB(req.params.id, req.user.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Chat created successfully',
+    data: result,
+  });
+});
+
 // leave chat
 const leaveChat = catchAsync(async (req: Request, res: Response) => {
   const result = await ChatServices.leaveChatFromDB(req.params.id, req.user.id);
@@ -93,6 +105,7 @@ const getMyChats = catchAsync(
 export const ChatController = {
   create1To1Chat,
   createGroupChat,
+  joinChat,
   leaveChat,
   deleteChat,
   getSingleChat,

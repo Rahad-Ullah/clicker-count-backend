@@ -23,6 +23,13 @@ router.post(
   ChatController.createGroupChat,
 );
 
+// join chat
+router.patch(
+  '/join/:id',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  ChatController.joinChat,
+);
+
 // leave chat
 router.patch(
   '/leave/:id',
