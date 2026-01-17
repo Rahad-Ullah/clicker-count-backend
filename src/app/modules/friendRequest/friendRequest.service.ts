@@ -113,7 +113,7 @@ const getFriendRequestsByUserId = async (
   const requestQuery = new QueryBuilder(
     FriendRequest.find({
       receiver: userId,
-    }).populate('sender', 'name image'),
+    }).populate('sender', 'name image address bio'),
     query
   )
     .filter()
