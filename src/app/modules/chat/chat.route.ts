@@ -41,7 +41,7 @@ router.patch(
 router.delete('/:id', auth(), ChatController.deleteChat);
 
 // get single chat
-router.get('/:id', auth(), ChatController.getSingleChat);
+router.get('/single/:id', auth(), ChatController.getSingleChat);
 
 // get my chats
 router.get('/', auth(), ChatController.getMyChats);
