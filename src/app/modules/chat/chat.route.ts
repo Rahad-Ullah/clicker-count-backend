@@ -3,15 +3,24 @@ import { ChatController } from './chat.controller';
 import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
 import { ChatValidations } from './chat.validation';
+import { USER_ROLES } from '../user/user.constant';
 
 const router = express.Router();
 
 // create 1-to-1 chat
 router.post(
   '/create-1-to-1',
-  auth(),
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
   validateRequest(ChatValidations.create1to1ChatValidation),
-  ChatController.createChat
+  ChatController.create1To1Chat,
+);
+
+// create group chat
+router.post(
+  '/create-group',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  validateRequest(ChatValidations.createGroupChatValidation),
+  ChatController.createGroupChat,
 );
 
 // delete chat

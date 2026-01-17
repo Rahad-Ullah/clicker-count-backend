@@ -10,13 +10,13 @@ import { toObjectId } from '../../../util/toObjectId';
 
 // ---------------- create 1-to-1 chat ----------------
 export const create1To1ChatIntoDB = async (
-  payload: IChat & { participant: string }
+  payload: IChat & { participant: string },
 ) => {
   // 1️. Prevent self-chat
   if (payload.participant === payload.author.toString()) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'You cannot create a chat with yourself!'
+      'You cannot create a chat with yourself!',
     );
   }
 
@@ -56,6 +56,32 @@ export const create1To1ChatIntoDB = async (
   return result;
 };
 
+// ---------------- create group chat ----------------
+export const createGroupChatIntoDB = async (payload: IChat) => {
+  // 1. push author to participants if not exist
+  if (!payload.participants.includes(payload.author)) {
+    payload.participants.push(payload.author);
+  }
+
+  // 2. check participant existence
+  const validParticipants = await User.find({
+    _id: { $in: payload.participants },
+  })
+    .select('_id')
+    .lean();
+  if (validParticipants.length !== payload.participants.length) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Invalid participant provided!');
+  }
+
+  // 3. create new chat
+  const chatPayload = {
+    ...payload,
+    isGroupChat: true,
+  };
+  const result = await Chat.create(chatPayload);
+  return result;
+};
+
 // ---------------- delete chat ----------------
 const deleteChatFromDB = async (chatId: string) => {
   const isExist = await Chat.exists({ _id: chatId });
@@ -66,7 +92,7 @@ const deleteChatFromDB = async (chatId: string) => {
   const result = await Chat.findByIdAndUpdate(
     chatId,
     { isDeleted: true },
-    { new: true }
+    { new: true },
   );
   return result;
 };
@@ -75,24 +101,24 @@ const deleteChatFromDB = async (chatId: string) => {
 const getSingleChatFromDB = async (chatId: string, userId: string) => {
   const result = await Chat.findById(chatId).populate(
     'participants',
-    'name image'
+    'name image',
   );
 
   // check if the user is a participant
   if (
     !result?.participants?.find(
-      (participant: any) => participant?._id.toString() === userId
+      (participant: any) => participant?._id.toString() === userId,
     )
   ) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'You are not a participant of this chat!'
+      'You are not a participant of this chat!',
     );
   }
 
   if (result) {
     const anotherParticipant = result?.participants?.find(
-      (participant: any) => participant?._id.toString() !== userId
+      (participant: any) => participant?._id.toString() !== userId,
     );
     return { ...result?.toObject(), anotherParticipant };
   }
@@ -102,7 +128,7 @@ const getSingleChatFromDB = async (chatId: string, userId: string) => {
 // ---------------- get my chats / get by id ----------------
 const getMyChatsFromDB = async (
   user: JwtPayload,
-  query: Record<string, any>
+  query: Record<string, any>,
 ) => {
   const chats = await Chat.find({ participants: { $in: [user.id] } })
     .populate({
@@ -121,7 +147,7 @@ const getMyChatsFromDB = async (
 
   // Filter out chats where no participants match the search (empty participants)
   const filteredChats = chats?.filter(
-    (chat: any) => chat?.participants?.length > 0
+    (chat: any) => chat?.participants?.length > 0,
   );
 
   //Use Promise.all to get the last message for each chat
@@ -147,7 +173,7 @@ const getMyChatsFromDB = async (
         unreadCount: unreadCount || 0,
         lastMessage: lastMessage || null,
       };
-    })
+    }),
   );
 
   return chatList;
@@ -155,6 +181,7 @@ const getMyChatsFromDB = async (
 
 export const ChatServices = {
   create1To1ChatIntoDB,
+  createGroupChatIntoDB,
   deleteChatFromDB,
   getSingleChatFromDB,
   getMyChatsFromDB,

@@ -4,10 +4,27 @@ import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { StatusCodes } from 'http-status-codes';
 
-// create chat
-const createChat = catchAsync(
+// create 1-to-1 chat
+const create1To1Chat = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const result = await ChatServices.create1To1ChatIntoDB({
+      ...req.body,
+      author: req.user.id,
+    });
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Chat created successfully',
+      data: result,
+    });
+  }
+);
+
+// create group chat
+const createGroupChat = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await ChatServices.createGroupChatIntoDB({
       ...req.body,
       author: req.user.id,
     });
@@ -64,7 +81,8 @@ const getMyChats = catchAsync(
 );
 
 export const ChatController = {
-  createChat,
+  create1To1Chat,
+  createGroupChat,
   deleteChat,
   getSingleChat,
   getMyChats,
