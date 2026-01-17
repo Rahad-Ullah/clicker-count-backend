@@ -5,24 +5,54 @@ import ApiError from '../../../errors/ApiError';
 import { StatusCodes } from 'http-status-codes';
 import { Message } from '../message/message.model';
 import { IMessage } from '../message/message.interface';
+import { User } from '../user/user.model';
+import { toObjectId } from '../../../util/toObjectId';
 
-// ---------------- create chat ----------------
-export const createChatIntoDB = async (user: JwtPayload, payload: IChat) => {
-  const participants = [...payload.participants];
-  // push the user id to participants if not already included
-  if (!participants.includes(user.id)) {
-    participants.push(user.id);
+// ---------------- create 1-to-1 chat ----------------
+export const create1To1ChatIntoDB = async (
+  payload: IChat & { participant: string }
+) => {
+  // 1️. Prevent self-chat
+  if (payload.participant === payload.author.toString()) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'You cannot create a chat with yourself!'
+    );
   }
 
-  // create chat if it does not exist
-  const isExist = await Chat.findOne({
+  // 2️. Check participant existence
+  const anotherParticipant = await User.findById(payload.participant).lean();
+  if (!anotherParticipant) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Participant does not exist!');
+  }
+
+  // 3️. Normalize & sort participants
+  const participants = [
+    toObjectId(payload.author),
+    toObjectId(payload.participant),
+  ].sort((a, b) => a.toString().localeCompare(b.toString()));
+
+  // 4️. Check if chat already exists
+  const existingChat = await Chat.findOne({
+    isGroupChat: false,
+    isDeleted: false,
     participants: { $all: participants },
-  }).lean();
-  if (isExist) {
-    return isExist;
+  });
+
+  if (existingChat) {
+    return existingChat;
   }
 
-  const result = await Chat.create({ participants });
+  // 5️. Create new chat
+  const chatPayload = {
+    ...payload,
+    participants,
+    chatName: anotherParticipant.name,
+    avatarUrl: anotherParticipant.image,
+    isGroupChat: false,
+  };
+
+  const result = await Chat.create(chatPayload);
   return result;
 };
 
@@ -124,7 +154,7 @@ const getMyChatsFromDB = async (
 };
 
 export const ChatServices = {
-  createChatIntoDB,
+  create1To1ChatIntoDB,
   deleteChatFromDB,
   getSingleChatFromDB,
   getMyChatsFromDB,

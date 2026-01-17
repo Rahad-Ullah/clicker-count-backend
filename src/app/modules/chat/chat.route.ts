@@ -6,11 +6,11 @@ import { ChatValidations } from './chat.validation';
 
 const router = express.Router();
 
-// create chat
+// create 1-to-1 chat
 router.post(
-  '/create',
+  '/create-1-to-1',
   auth(),
-  validateRequest(ChatValidations.createChatValidation),
+  validateRequest(ChatValidations.create1to1ChatValidation),
   ChatController.createChat
 );
 

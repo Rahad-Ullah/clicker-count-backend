@@ -2,15 +2,19 @@ import { Request, Response, NextFunction } from 'express';
 import { ChatServices } from './chat.service';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
+import { StatusCodes } from 'http-status-codes';
 
 // create chat
 const createChat = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await ChatServices.createChatIntoDB(req.user, req.body);
+    const result = await ChatServices.create1To1ChatIntoDB({
+      ...req.body,
+      author: req.user.id,
+    });
 
     sendResponse(res, {
       success: true,
-      statusCode: 200,
+      statusCode: StatusCodes.OK,
       message: 'Chat created successfully',
       data: result,
     });

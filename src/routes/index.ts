@@ -8,6 +8,7 @@ import { analyticsRoutes } from '../app/modules/analytics/analytics.route';
 import { postRoutes } from '../app/modules/post/post.route';
 import { friendshipRoutes } from '../app/modules/friendship/friendship.route';
 import { friendRequestRoutes } from '../app/modules/friendRequest/friendRequest.route';
+import { ChatRoutes } from '../app/modules/chat/chat.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -34,6 +35,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/friendships',
     route: friendshipRoutes,
+  },
+  {
+    path: '/chats',
+    route: ChatRoutes,
   },
   {
     path: '/supports',
