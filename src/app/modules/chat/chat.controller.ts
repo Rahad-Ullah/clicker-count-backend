@@ -39,18 +39,16 @@ const createGroupChat = catchAsync(
 );
 
 // delete chat
-const deleteChat = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const result = await ChatServices.deleteChatFromDB(req.params.id);
+const deleteChat = catchAsync(async (req: Request, res: Response) => {
+  const result = await ChatServices.deleteChatFromDB(req.params.id, req.user);
 
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: 'Chat created successfully',
-      data: result,
-    });
-  }
-);
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Chat created successfully',
+    data: result,
+  });
+});
 
 // get single chat
 const getSingleChat = catchAsync(

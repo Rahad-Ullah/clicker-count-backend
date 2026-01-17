@@ -7,6 +7,7 @@ import { Message } from '../message/message.model';
 import { IMessage } from '../message/message.interface';
 import { User } from '../user/user.model';
 import { toObjectId } from '../../../util/toObjectId';
+import { USER_ROLES } from '../user/user.constant';
 
 // ---------------- create 1-to-1 chat ----------------
 export const create1To1ChatIntoDB = async (
@@ -83,10 +84,37 @@ export const createGroupChatIntoDB = async (payload: IChat) => {
 };
 
 // ---------------- delete chat ----------------
-const deleteChatFromDB = async (chatId: string) => {
-  const isExist = await Chat.exists({ _id: chatId });
-  if (!isExist) {
+const deleteChatFromDB = async (chatId: string, user: JwtPayload) => {
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Chat not found!');
+  }
+
+  const isAdmin =
+    user.role === USER_ROLES.ADMIN || user.role === USER_ROLES.SUPER_ADMIN;
+
+  const isAuthor = chat.author.equals(user.id);
+  const isParticipant = chat.participants.some(p => p.equals(user.id));
+
+  // Authorization for non-admin
+  if (!isAdmin) {
+    // Group chat
+    if (chat.isGroupChat) {
+      if (!isAuthor) {
+        throw new ApiError(
+          StatusCodes.UNAUTHORIZED,
+          'You are not authorized to delete this chat!',
+        );
+      }
+    } else {
+      // 1-to-1 chat
+      if (!isParticipant) {
+        throw new ApiError(
+          StatusCodes.UNAUTHORIZED,
+          'You are not authorized to delete this chat!',
+        );
+      }
+    }
   }
 
   const result = await Chat.findByIdAndUpdate(
@@ -94,6 +122,7 @@ const deleteChatFromDB = async (chatId: string) => {
     { isDeleted: true },
     { new: true },
   );
+
   return result;
 };
 
