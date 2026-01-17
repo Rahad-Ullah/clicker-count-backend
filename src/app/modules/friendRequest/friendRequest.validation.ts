@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const createFriendRequestValidation = z.object({
   body: z
     .object({
-      receiverId: z
+      receiver: z
         .string({ required_error: 'Receiver ID is required' })
         .length(24, 'Invalid receiver ID'),
     })

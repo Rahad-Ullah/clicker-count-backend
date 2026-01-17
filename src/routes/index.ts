@@ -7,6 +7,7 @@ import { disclaimerRoutes } from '../app/modules/disclaimer/disclaimer.route';
 import { analyticsRoutes } from '../app/modules/analytics/analytics.route';
 import { postRoutes } from '../app/modules/post/post.route';
 import { friendshipRoutes } from '../app/modules/friendship/friendship.route';
+import { friendRequestRoutes } from '../app/modules/friendRequest/friendRequest.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -25,6 +26,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/posts',
     route: postRoutes,
+  },
+  {
+    path: '/friend-requests',
+    route: friendRequestRoutes,
   },
   {
     path: '/friendships',
