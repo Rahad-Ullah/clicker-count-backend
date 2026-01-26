@@ -20,8 +20,7 @@ export const createMessage = async (payload: IMessage): Promise<IMessage> => {
       'Chat not found or you are not a participant'
     );
   // check if text or image is provided
-  if (!payload.text && !payload.image)
-    throw new Error('Text or image is required');
+  if (!payload.content) throw new Error('Content is required');
 
   // mark sender as seen
   payload.seenBy = [payload.sender];
