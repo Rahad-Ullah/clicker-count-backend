@@ -33,11 +33,11 @@ export const createMessage = async (payload: IMessage): Promise<IMessage> => {
   const io = global.io;
   if (io) {
     // 🔔 emit message to chat room
-    io.to(`chat:${payload.chat}`).emit('getMessage', result);
+    io.to(`chat:${payload.chat}`).emit('message:new', result);
 
     // 🔔 emit chat list update per participant
     isChatExist.participants.forEach(userId => {
-      io.to(`user:${userId.toString()}`).emit('getChatList', result);
+      io.to(`user:${userId.toString()}`).emit('chat:update', result);
     });
   }
 
