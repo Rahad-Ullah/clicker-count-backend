@@ -10,6 +10,7 @@ import { friendshipRoutes } from '../app/modules/friendship/friendship.route';
 import { friendRequestRoutes } from '../app/modules/friendRequest/friendRequest.route';
 import { ChatRoutes } from '../app/modules/chat/chat.route';
 import { notificationRoutes } from '../app/modules/notification/notification.route';
+import { MessageRoutes } from '../app/modules/message/message.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -40,6 +41,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/chats',
     route: ChatRoutes,
+  },
+  {
+    path: '/messages',
+    route: MessageRoutes,
   },
   {
     path: '/notifications',

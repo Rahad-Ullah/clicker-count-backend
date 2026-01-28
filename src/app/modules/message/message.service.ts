@@ -17,10 +17,11 @@ export const createMessage = async (payload: IMessage): Promise<IMessage> => {
   if (!isChatExist)
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'Chat not found or you are not a participant'
+      'Chat not found or you are not a participant',
     );
-  // check if text or image is provided
-  if (!payload.content) throw new Error('Content is required');
+  // check if content is provided
+  if (!payload.content)
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Content is required');
 
   // mark sender as seen
   payload.seenBy = [payload.sender];

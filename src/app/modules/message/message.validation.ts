@@ -1,18 +1,17 @@
 import { z } from 'zod';
 import { MESSAGE_TYPE } from './message.constant';
+import { objectId } from '../../../helpers/zodHelper';
 
 // Define the validation schema for Message
 const createMessageSchema = z.object({
   body: z
     .object({
-      chat: z
-        .string({ required_error: 'Chat id is required' })
-        .nonempty('Chat id is required')
-        .length(24, 'Invalid chat id'),
+      chat: objectId,
       type: z.nativeEnum(MESSAGE_TYPE),
-      content: z
-        .string({ required_error: 'Message content is required' })
-        .nonempty('Message content is required'),
+      text: z.string().nonempty('Message content is required').optional(),
+      image: z.any().optional(),
+      media: z.any().optional(),
+      doc: z.any().optional(),
     })
     .strict(),
 });

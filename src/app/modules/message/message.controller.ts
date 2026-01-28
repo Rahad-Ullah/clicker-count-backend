@@ -3,21 +3,67 @@ import { MessageServices } from './message.service';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { getSingleFilePath } from '../../../shared/getFilePath';
+import ApiError from '../../../errors/ApiError';
+import { StatusCodes } from 'http-status-codes';
+import { MESSAGE_TYPE } from './message.constant';
 
 // ----------------- create message -------------------
 const createMessage = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const image = getSingleFilePath(req.files, 'image');
-    const payload = { ...req.body, image, sender: req.user.id };
+    const payload = { ...req.body, sender: req.user.id };
+
+    // validation for message content
+    switch (payload.type) {
+      case MESSAGE_TYPE.TEXT:
+        if (!payload.text || payload.text.trim() === '') {
+          return next(
+            new ApiError(StatusCodes.BAD_REQUEST, 'Text message is required'),
+          );
+        }
+        payload.content = payload.text.trim();
+        delete payload.text;
+        break;
+      case MESSAGE_TYPE.IMAGE:
+        const imagePath = getSingleFilePath(req.files, 'image');
+        if (!imagePath) {
+          return next(
+            new ApiError(StatusCodes.BAD_REQUEST, 'Image is required'),
+          );
+        }
+        payload.content = imagePath;
+        delete payload.image;
+        break;
+      case MESSAGE_TYPE.MEDIA:
+        const mediaPath = getSingleFilePath(req.files, 'media');
+        if (!mediaPath) {
+          return next(
+            new ApiError(StatusCodes.BAD_REQUEST, 'Media is required'),
+          );
+        }
+        payload.content = mediaPath;
+        delete payload.media;
+        break;
+      case MESSAGE_TYPE.DOCUMENT:
+        const docPath = getSingleFilePath(req.files, 'doc');
+        if (!docPath) {
+          return next(
+            new ApiError(StatusCodes.BAD_REQUEST, 'Document is required'),
+          );
+        }
+        payload.content = docPath;
+        delete payload.doc;
+        break;
+    }
+
     const result = await MessageServices.createMessage(payload);
 
     sendResponse(res, {
       success: true,
-      statusCode: 201,
+      statusCode: StatusCodes.OK,
       message: 'Message created successfully',
       data: result,
     });
-  }
+  },
 );
 
 // ----------------- get messages by chat id -------------------
@@ -29,7 +75,7 @@ const getChatMessages = catchAsync(
     const result = await MessageServices.getChatMessages(
       chatId,
       req.query,
-      user
+      user,
     );
 
     sendResponse(res, {
@@ -39,7 +85,7 @@ const getChatMessages = catchAsync(
       data: result.messages,
       pagination: result.pagination,
     });
-  }
+  },
 );
 
 export const MessageController = { createMessage, getChatMessages };

@@ -41,7 +41,7 @@ const messageSchema = new Schema<IMessage, MessageModel>(
   }
 );
 
-messageSchema.index({ chat: 1, sender: 1 }, { unique: true });
+messageSchema.index({ chat: 1, sender: 1 });
 messageSchema.index({ chat: 1, seenBy: 1 });
 
 export const Message = model<IMessage, MessageModel>('Message', messageSchema);
