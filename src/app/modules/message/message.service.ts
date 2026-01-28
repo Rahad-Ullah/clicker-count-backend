@@ -51,9 +51,9 @@ export const createMessage = async (payload: IMessage): Promise<IMessage> => {
 export const getChatMessages = async (
   chatId: string,
   query: Record<string, any>,
-  user: JwtPayload
+  user: JwtPayload,
 ) => {
-  // check if the chat exists
+  // check if the chat exists and the user is a participant
   const existingChat = await Chat.findOne({
     _id: chatId,
     participants: { $in: [user?.id] },
@@ -64,7 +64,7 @@ export const getChatMessages = async (
   // update seen status those messages are not seen by the user
   await Message.updateMany(
     { chat: chatId, seenBy: { $nin: [user?.id] } },
-    { $addToSet: { seenBy: user?.id } }
+    { $addToSet: { seenBy: user?.id } },
   );
 
   // get messages
@@ -72,7 +72,7 @@ export const getChatMessages = async (
     Message.find({ chat: chatId })
       .populate('sender', 'name image isDeleted')
       .sort({ createdAt: -1 }),
-    query
+    query,
   )
     .paginate()
     .search(['text']);
@@ -92,6 +92,6 @@ export const getChatMessages = async (
   });
 
   return { messages: messagesWithStatus, pagination };
-};
+};;
 
 export const MessageServices = { createMessage, getChatMessages };
