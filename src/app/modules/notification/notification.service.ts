@@ -68,13 +68,15 @@ const createTestNotification = async (userId: string, payload: any) => {
     throw new Error('User does not exist');
   }
 
-  await sendNotifications({
+  const result = await sendNotifications({
     type: payload?.type || 'TEST',
     title: payload?.title || 'Test Notification',
     message: payload?.message || 'This is a test notification',
     receiver: user._id,
     referenceId: userId,
   });
+
+  return result;
 };
 
 export const NotificationServices = {

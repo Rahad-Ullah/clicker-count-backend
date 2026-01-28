@@ -11,7 +11,10 @@ export const sendNotifications = async (
 
   try {
     if (io && data.receiver) {
-      io.to(`user:${data.receiver.toString()}`).emit('getNotification', result);
+      io.to(`user:${data.receiver.toString()}`).emit(
+        'notification:new',
+        result,
+      );
     }
   } catch (error) {
     console.error(`Error while sending notification: ${error}`);
