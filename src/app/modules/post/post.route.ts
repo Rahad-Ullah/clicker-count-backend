@@ -40,10 +40,6 @@ router.get(
 );
 
 // get all posts
-router.get(
-  '/',
-  auth(),
-  PostController.getAllPosts
-);
+router.get('/', PostController.getAllPosts);
 
 export const postRoutes = router;
