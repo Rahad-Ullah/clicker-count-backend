@@ -1,6 +1,5 @@
 # Clicker Count
 
-Diabetes is confusing. Fast Food Buddy™ helps you understand why things happen. The project is for backend development of **Fastfood Buddy** using Typescript, Node.js, Express, Mongoose, Bcrypt, JWT, NodeMailer, Multer, ESLint, and Prettier. The aim is to reduce setup time for new backend projects.
 
 ## Features
 
