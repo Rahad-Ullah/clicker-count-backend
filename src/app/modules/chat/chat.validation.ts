@@ -6,7 +6,7 @@ import { objectId } from '../../../helpers/zodHelper';
 export const create1to1ChatValidation = z.object({
   body: z
     .object({
-      participant: objectId,
+      participant: objectId('Invalid participant ID'),
     })
     .strict(),
 });
@@ -16,7 +16,7 @@ export const createGroupChatValidation = z.object({
   body: z
     .object({
       participants: z
-        .array(objectId)
+        .array(objectId('Invalid participant ID'))
         .min(1, 'Minimum 1 participants are required'),
       chatName: z.string().nonempty('Chat name cannot be empty'),
       description: z.string().nonempty('Description cannot be empty'),

@@ -6,7 +6,7 @@ import { objectId } from '../../../helpers/zodHelper';
 const createMessageSchema = z.object({
   body: z
     .object({
-      chat: objectId,
+      chat: objectId('Invalid chat ID'),
       type: z.nativeEnum(MESSAGE_TYPE),
       text: z.string().nonempty('Message content is required').optional(),
       image: z.any().optional(),
