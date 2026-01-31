@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { POST_PRIVACY } from './post.constants';
+import { objectId } from '../../../helpers/zodHelper';
 
 // create post schema
 export const createPostValidation = z.object({
@@ -44,7 +45,14 @@ export const updatePostValidation = z.object({
     .strict(),
 });
 
+const deletePostValidation = z.object({
+  params: z.object({
+    id: objectId('Invalid post ID'),
+  }),
+});
+
 export const PostValidations = {
   createPostValidation,
   updatePostValidation,
+  deletePostValidation,
 };

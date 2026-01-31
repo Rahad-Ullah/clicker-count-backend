@@ -59,6 +59,23 @@ const updatePostToDB = async (
   return result!;
 };
 
+// -------------- delete post --------------
+const deletePostFromDB = async (id: string, user: string): Promise<IPost> => {
+  // check if post exists
+  const existingPost = await Post.findById(id).lean();
+  if (!existingPost) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Post not found');
+  }
+
+  // check if user is owner
+  if (existingPost.user.toString() !== user) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized to perform this action');
+  }
+  
+  const result = await Post.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+  return result!;
+};
+
 // -------------- get single post --------------
 const getSinglePostFromDB = async (id: string): Promise<IPost> => {
   const result = await Post.findById(id)
@@ -142,6 +159,7 @@ const getAllPostsFromDB = async (query: Record<string, unknown>) => {
 export const PostServices = {
   createPostToDB,
   updatePostToDB,
+  deletePostFromDB,
   getSinglePostFromDB,
   getPostsByUserId,
   getAllPostsFromDB,

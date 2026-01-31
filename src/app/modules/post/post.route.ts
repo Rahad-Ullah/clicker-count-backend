@@ -26,6 +26,14 @@ router.patch(
   PostController.updatePost
 );
 
+// delete post
+router.delete(
+  '/delete/:id',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  validateRequest(PostValidations.deletePostValidation),
+  PostController.deletePost
+);
+
 // get single post
 router.get('/single/:id', auth(), PostController.getSinglePostById);
 
