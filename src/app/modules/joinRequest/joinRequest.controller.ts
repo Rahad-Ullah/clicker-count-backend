@@ -21,6 +21,22 @@ const createJoinRequest = catchAsync(
   },
 );
 
+// update join request
+const updateJoinRequest = catchAsync(async (req: Request, res: Response) => {
+  const result = await JoinRequestServices.updateJoinRequestIntoDB(
+    req.params.id,
+    req.body
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Join request updated successfully',
+    data: result,
+  });
+});
+
 export const JoinRequestController = {
   createJoinRequest,
+  updateJoinRequest,
 };

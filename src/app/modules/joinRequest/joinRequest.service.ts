@@ -4,6 +4,7 @@ import { JOIN_REQUEST_STATUS } from './joinRequest.constants';
 import { IJoinRequest } from './joinRequest.interface';
 import { JoinRequest } from './joinRequest.model';
 import { Chat } from '../chat/chat.model';
+import mongoose from 'mongoose';
 
 // -------------- create join request --------------
 const createJoinRequestIntoDB = async (
@@ -40,6 +41,57 @@ const createJoinRequestIntoDB = async (
   return result;
 };
 
+// -------------- update join request --------------
+const updateJoinRequestIntoDB = async (
+  id: string,
+  payload: Partial<IJoinRequest>,
+): Promise<IJoinRequest> => {
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    // Fetch join request inside session
+    const joinRequest = await JoinRequest.findById(id).session(session);
+
+    if (!joinRequest) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Join request not found');
+    }
+
+    if (joinRequest.status !== JOIN_REQUEST_STATUS.PENDING) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Only pending join requests can be updated'
+      );
+    }
+
+    //  If accepted, add participant to chat
+    if (payload.status === JOIN_REQUEST_STATUS.ACCEPTED) {
+      await Chat.findByIdAndUpdate(
+        joinRequest.chat,
+        { $addToSet: { participants: joinRequest.user } },
+        { session }
+      );
+    }
+
+    //  Update join request
+    const result = await JoinRequest.findByIdAndUpdate(
+      id,
+      payload,
+      { new: true, session }
+    );
+
+    await session.commitTransaction();
+    return result!;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
+  }
+};
+
 export const JoinRequestServices = {
   createJoinRequestIntoDB,
+  updateJoinRequestIntoDB,
 };

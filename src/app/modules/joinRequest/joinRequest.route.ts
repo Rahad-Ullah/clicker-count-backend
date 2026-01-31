@@ -15,4 +15,12 @@ router.post(
   JoinRequestController.createJoinRequest,
 );
 
+// update join request
+router.patch(
+  '/update/:id',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  validateRequest(JoinRequestValidations.updateJoinRequest),
+  JoinRequestController.updateJoinRequest,
+);
+
 export const joinRequestRoutes = router;
