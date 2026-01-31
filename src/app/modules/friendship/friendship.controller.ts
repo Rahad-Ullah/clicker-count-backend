@@ -16,6 +16,21 @@ const unfriend = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// check friendship by friend user id
+const checkFriendship = catchAsync(async (req: Request, res: Response) => {
+  const result = await FriendshipServices.checkFriendship(
+    req.user?.id,
+    req.params.id
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Friendship checked successfully',
+    data: result,
+  });
+});
+
 // get my friends
 const getMyFriends = catchAsync(async (req: Request, res: Response) => {
   const result = await FriendshipServices.getFriendsByUserId(
@@ -34,5 +49,6 @@ const getMyFriends = catchAsync(async (req: Request, res: Response) => {
 
 export const FriendshipController = {
   unfriend,
+  checkFriendship,
   getMyFriends,
 };
