@@ -10,6 +10,8 @@ import { USER_ROLES, USER_STATUS } from '../user/user.constant';
 import { Types } from 'mongoose';
 import { CHAT_ACCESS_TYPE, CHAT_PRIVACY } from './chat.constant';
 import QueryBuilder from '../../builder/QueryBuilder';
+import { JoinRequest } from '../joinRequest/joinRequest.model';
+import { JOIN_REQUEST_STATUS } from '../joinRequest/joinRequest.constants';
 
 // ---------------- create 1-to-1 chat ----------------
 export const create1To1ChatIntoDB = async (
@@ -120,8 +122,25 @@ const joinChatIntoDB = async (chatId: string, userId: string) => {
 
   // 5️. Join chat with access control
   if (chat.accessType === CHAT_ACCESS_TYPE.RESTRICTED) {
-    // ! todo: create a join request
-    return;
+    // check if already a request is pending
+    const pendingRequest = await JoinRequest.exists({
+      chat: chatId,
+      user: userId,
+      status: JOIN_REQUEST_STATUS.PENDING,
+    });
+    if (pendingRequest) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'You already have a pending request for this chat',
+      );
+    }
+    // create join request
+    await JoinRequest.create({
+      chat: chatId,
+      user: userId,
+      status: JOIN_REQUEST_STATUS.PENDING,
+    });
+    return { message: 'Join request sent successfully' };
   }
   // join directly for public groups
   const result = await Chat.findByIdAndUpdate(

@@ -5,11 +5,10 @@ import { IJoinRequest } from './joinRequest.interface';
 import { JoinRequest } from './joinRequest.model';
 import { Chat } from '../chat/chat.model';
 import mongoose from 'mongoose';
+import { CHAT_ACCESS_TYPE } from '../chat/chat.constant';
 
 // -------------- create join request --------------
-const createJoinRequestIntoDB = async (
-  payload: IJoinRequest,
-): Promise<IJoinRequest> => {
+const createJoinRequestIntoDB = async (payload: IJoinRequest) => {
   // check if chat exists
   const existingChat = await Chat.findById(payload.chat);
   if (!existingChat) {
@@ -17,11 +16,22 @@ const createJoinRequestIntoDB = async (
   }
 
   // check if already a participant of the chat
-  if (existingChat.participants.includes(payload.user)) {
+  if (existingChat.participants.some(p => p.equals(payload.user))) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       'You are already a participant of this chat',
     );
+  }
+
+  // if the chat is public then direct join to the chat
+  if (existingChat.accessType === CHAT_ACCESS_TYPE.OPEN) {
+    await Chat.findByIdAndUpdate(payload.chat, {
+      $addToSet: {
+        participants: payload.user,
+      },
+    });
+
+    return { message: 'Joined the chat successfully' };
   }
 
   // check if already a request is pending
@@ -39,7 +49,7 @@ const createJoinRequestIntoDB = async (
 
   const result = await JoinRequest.create(payload);
   return result;
-};
+};;
 
 // -------------- update join request --------------
 const updateJoinRequestIntoDB = async (
@@ -61,7 +71,7 @@ const updateJoinRequestIntoDB = async (
     if (joinRequest.status !== JOIN_REQUEST_STATUS.PENDING) {
       throw new ApiError(
         StatusCodes.BAD_REQUEST,
-        'Only pending join requests can be updated'
+        'Only pending join requests can be updated',
       );
     }
 
@@ -70,16 +80,15 @@ const updateJoinRequestIntoDB = async (
       await Chat.findByIdAndUpdate(
         joinRequest.chat,
         { $addToSet: { participants: joinRequest.user } },
-        { session }
+        { session },
       );
     }
 
     //  Update join request
-    const result = await JoinRequest.findByIdAndUpdate(
-      id,
-      payload,
-      { new: true, session }
-    );
+    const result = await JoinRequest.findByIdAndUpdate(id, payload, {
+      new: true,
+      session,
+    });
 
     await session.commitTransaction();
     return result!;

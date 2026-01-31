@@ -45,7 +45,7 @@ const joinChat = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Chat created successfully',
+    message: (result as any)?.message || 'Chat created successfully',
     data: result,
   });
 });
