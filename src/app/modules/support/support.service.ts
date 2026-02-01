@@ -39,27 +39,51 @@ export const updateSupport = async (
   return result!;
 };
 
+// ----------- get history by user id -----------
+export const getSupportsByUserId = async (userId: string, query: Record<string, unknown>) => {
+  const supportQuery = new QueryBuilder(
+    Support.find({
+      user: userId,
+    }).populate('user', 'name email image'),
+    query
+  )
+    .filter()
+    .paginate()
+    .sort()
+    .fields();
+
+  const [data, pagination] = await Promise.all([
+    supportQuery.modelQuery.lean(),
+    supportQuery.getPaginationInfo(),
+  ]);
+
+  return { data, pagination };
+};
+
 // ----------- get all support -----------
 const getAllSupport = async (query: Record<string, unknown>) => {
   // pre-filter users
+  const filter = {} as Record<string, any>;
   const searchTerm = (query?.searchTerm as string)?.trim();
-  const users = searchTerm
-    ? await User.find({
-        $or: [
-          { name: { $regex: searchTerm, $options: 'i' } },
-          { email: { $regex: searchTerm, $options: 'i' } },
-        ],
-      })
-        .select('_id')
-        .lean()
-    : [];
+  if (searchTerm) {
+    const users = searchTerm
+      ? await User.find({
+          $or: [
+            { name: { $regex: searchTerm, $options: 'i' } },
+            { email: { $regex: searchTerm, $options: 'i' } },
+          ],
+        })
+          .select('_id')
+          .lean()
+      : [];
+
+    filter.user = { $in: users.map(user => user._id) };
+  }
 
   // filter by users
   const supportQuery = new QueryBuilder(
-    Support.find({
-      user: { $in: users },
-    }).populate('user', 'name email image'),
-    query
+    Support.find(filter).populate('user', 'name email image'),
+    query,
   )
     .filter()
     .paginate()
@@ -77,5 +101,6 @@ const getAllSupport = async (query: Record<string, unknown>) => {
 export const SupportServices = {
   createSupport,
   updateSupport,
+  getSupportsByUserId,
   getAllSupport,
 };

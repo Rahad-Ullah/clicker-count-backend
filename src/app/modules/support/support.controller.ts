@@ -36,6 +36,32 @@ const updateSupport = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get support by user id
+const getSupportsByUserId = catchAsync(async (req: Request, res: Response) => {
+  const result = await SupportServices.getSupportsByUserId(req.params.id, req.query);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Support retrieved successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
+// get my history
+const getMyHistory = catchAsync(async (req: Request, res: Response) => {
+  const result = await SupportServices.getSupportsByUserId(req.user?.id, req.query);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Support retrieved successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
 // get all support
 const getAllSupport = catchAsync(async (req: Request, res: Response) => {
   const result = await SupportServices.getAllSupport(req.query);
@@ -52,5 +78,7 @@ const getAllSupport = catchAsync(async (req: Request, res: Response) => {
 export const SupportController = {
   createSupport,
   updateSupport,
+  getSupportsByUserId,
+  getMyHistory,
   getAllSupport,
 };

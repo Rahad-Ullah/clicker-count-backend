@@ -25,6 +25,20 @@ router.patch(
   SupportController.updateSupport,
 );
 
+// get by user id
+router.get(
+  '/user/:id',
+  auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  SupportController.getSupportsByUserId,
+);
+
+// get my history
+router.get(
+  '/my-history',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  SupportController.getMyHistory,
+);
+
 // get all support
 router.get('/', auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), SupportController.getAllSupport);
 
