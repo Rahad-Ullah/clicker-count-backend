@@ -3,6 +3,7 @@ import { ChatServices } from './chat.service';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { StatusCodes } from 'http-status-codes';
+import { getSingleFilePath } from '../../../shared/getFilePath';
 
 // create 1-to-1 chat
 const create1To1Chat = catchAsync(
@@ -18,7 +19,7 @@ const create1To1Chat = catchAsync(
       message: 'Chat created successfully',
       data: result,
     });
-  }
+  },
 );
 
 // create group chat
@@ -35,8 +36,25 @@ const createGroupChat = catchAsync(
       message: 'Chat created successfully',
       data: result,
     });
-  }
+  },
 );
+
+// update chat
+const updateChat = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const imagePath = getSingleFilePath(req.files, 'image');
+  if (imagePath) {
+    payload.avatarUrl = imagePath;
+  }
+  const result = await ChatServices.updateChatIntoDB(req.params.id, payload);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Chat created successfully',
+    data: result,
+  });
+});
 
 // join chat
 const joinChat = catchAsync(async (req: Request, res: Response) => {
@@ -112,6 +130,7 @@ const getMyChats = catchAsync(
 export const ChatController = {
   create1To1Chat,
   createGroupChat,
+  updateChat,
   joinChat,
   leaveChat,
   deleteChat,

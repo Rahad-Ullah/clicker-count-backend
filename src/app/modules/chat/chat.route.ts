@@ -4,6 +4,7 @@ import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
 import { ChatValidations } from './chat.validation';
 import { USER_ROLES } from '../user/user.constant';
+import fileUploadHandler from '../../middlewares/fileUploadHandler';
 
 const router = express.Router();
 
@@ -21,6 +22,15 @@ router.post(
   auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
   validateRequest(ChatValidations.createGroupChatValidation),
   ChatController.createGroupChat,
+);
+
+// update chat
+router.patch(
+  '/update/:id',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  fileUploadHandler(),
+  validateRequest(ChatValidations.updateChatValidation),
+  ChatController.updateChat,
 );
 
 // join chat

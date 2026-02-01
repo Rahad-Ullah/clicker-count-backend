@@ -12,6 +12,7 @@ import { CHAT_ACCESS_TYPE, CHAT_PRIVACY } from './chat.constant';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { JoinRequest } from '../joinRequest/joinRequest.model';
 import { JOIN_REQUEST_STATUS } from '../joinRequest/joinRequest.constants';
+import unlinkFile from '../../../shared/unlinkFile';
 
 // ---------------- create 1-to-1 chat ----------------
 export const create1To1ChatIntoDB = async (
@@ -85,8 +86,23 @@ export const createGroupChatIntoDB = async (payload: IChat) => {
   return result;
 };
 
-// ---------------- join chat ----------------
+// ---------------- update chat ----------------
+export const updateChatIntoDB = async (chatId: string, payload: IChat) => {
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Chat not found!');
+  }
 
+  const result = await Chat.findByIdAndUpdate(chatId, payload, { new: true });
+
+  // unlink file here
+  if (payload.avatarUrl && chat.avatarUrl && result) {
+    await unlinkFile(chat.avatarUrl);
+  }
+  return result;
+};
+
+// ---------------- join chat ----------------
 const joinChatIntoDB = async (chatId: string, userId: string) => {
   // 1️. Validate user exists
   const userExists = await User.exists({
@@ -370,6 +386,7 @@ const getChatsByUserIdFromDB = async (
 export const ChatServices = {
   create1To1ChatIntoDB,
   createGroupChatIntoDB,
+  updateChatIntoDB,
   joinChatIntoDB,
   leaveChatFromDB,
   deleteChatFromDB,

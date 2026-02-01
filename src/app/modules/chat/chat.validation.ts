@@ -3,7 +3,7 @@ import { CHAT_ACCESS_TYPE, CHAT_PRIVACY } from './chat.constant';
 import { objectId } from '../../../helpers/zodHelper';
 
 // create 1-to-1 chat validation
-export const create1to1ChatValidation = z.object({
+const create1to1ChatValidation = z.object({
   body: z
     .object({
       participant: objectId('Invalid participant ID'),
@@ -12,7 +12,7 @@ export const create1to1ChatValidation = z.object({
 });
 
 // create group chat validation
-export const createGroupChatValidation = z.object({
+const createGroupChatValidation = z.object({
   body: z
     .object({
       participants: z
@@ -26,7 +26,27 @@ export const createGroupChatValidation = z.object({
     .strict(),
 });
 
+// update chat validation
+const updateChatValidation = z.object({
+  params: z.object({
+    id: objectId('Invalid chat ID'),
+  }),
+  body: z
+    .object({
+      chatName: z.string().nonempty('Chat name cannot be empty').optional(),
+      description: z
+        .string()
+        .nonempty('Description cannot be empty')
+        .optional(),
+      privacy: z.nativeEnum(CHAT_PRIVACY).optional(),
+      accessType: z.nativeEnum(CHAT_ACCESS_TYPE).optional(),
+      image: z.any().optional(),
+    })
+    .strict(),
+});
+
 export const ChatValidations = {
   create1to1ChatValidation,
   createGroupChatValidation,
+  updateChatValidation,
 };
