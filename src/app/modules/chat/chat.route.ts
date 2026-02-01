@@ -41,6 +41,14 @@ router.patch(
   ChatController.addMemberToChat,
 );
 
+// remove member from chat
+router.patch(
+  '/remove-member/:id',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  validateRequest(ChatValidations.removeMemberFromChatValidation),
+  ChatController.removeMemberFromChat,
+);
+
 // join chat
 router.patch(
   '/join/:id',

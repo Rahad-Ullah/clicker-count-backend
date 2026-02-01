@@ -71,6 +71,22 @@ const addMemberToChat = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// remove member from chat
+const removeMemberFromChat = catchAsync(async (req: Request, res: Response) => {
+  const result = await ChatServices.removeMemberFromChat(
+    req.params.id,
+    req.body.member,
+    req.user.id,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Chat created successfully',
+    data: result,
+  });
+});
+
 // join chat
 const joinChat = catchAsync(async (req: Request, res: Response) => {
   const result = await ChatServices.joinChatIntoDB(req.params.id, req.user.id);
@@ -147,6 +163,7 @@ export const ChatController = {
   createGroupChat,
   updateChat,
   addMemberToChat,
+  removeMemberFromChat,
   joinChat,
   leaveChat,
   deleteChat,

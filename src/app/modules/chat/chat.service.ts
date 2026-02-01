@@ -135,6 +135,50 @@ const addMemberToChatIntoDB = async (chatId: string, members: string[]) => {
   return result;
 };
 
+// ---------------- remove member from chat ----------------
+const removeMemberFromChat = async (
+  chatId: string,
+  memberId: string,
+  userId: string,
+) => {
+  const chat = await Chat.findOne({ _id: chatId, isDeleted: false });
+  if (!chat) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Chat not found or may be deleted!');
+  }
+
+  if (!chat.isGroupChat) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'You cannot remove participants from a 1-to-1 chat!',
+    );
+  }
+
+  // check if the user is a participant of the chat
+  const isParticipant = chat.participants.some(p => p.equals(memberId));
+  if (!isParticipant) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'The user is not a participant of this chat!',
+    );
+  }
+
+  // check if you are the owner of the chat
+  if (chat.author.toString() !== userId) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Only the owner of the chat can remove participants!',
+    );
+  }
+
+  const result = await Chat.findByIdAndUpdate(
+    chatId,
+    { $pull: { participants: memberId } },
+    { new: true },
+  );
+
+  return result;
+};
+
 // ---------------- join chat ----------------
 const joinChatIntoDB = async (chatId: string, userId: string) => {
   // 1️. Validate user exists
@@ -421,6 +465,7 @@ export const ChatServices = {
   createGroupChatIntoDB,
   updateChatIntoDB,
   addMemberToChatIntoDB,
+  removeMemberFromChat,
   joinChatIntoDB,
   leaveChatFromDB,
   deleteChatFromDB,

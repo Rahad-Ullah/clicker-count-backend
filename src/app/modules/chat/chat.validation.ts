@@ -59,9 +59,22 @@ const addMemberToChatValidation = z.object({
     .strict(),
 })
 
+// remove member from chat
+const removeMemberFromChatValidation = z.object({
+  params: z.object({
+    id: objectId('Invalid chat ID'),
+  }),
+  body: z
+    .object({
+      member: objectId('Invalid participant ID'),
+    })
+    .strict(),
+})
+
 export const ChatValidations = {
   create1to1ChatValidation,
   createGroupChatValidation,
   updateChatValidation,
-  addMemberToChatValidation
+  addMemberToChatValidation,
+  removeMemberFromChatValidation
 };
