@@ -102,6 +102,39 @@ export const updateChatIntoDB = async (chatId: string, payload: IChat) => {
   return result;
 };
 
+// ---------------- add member to chat ----------------
+const addMemberToChatIntoDB = async (chatId: string, members: string[]) => {
+  const chat = await Chat.findOne({ _id: chatId, isDeleted: false });
+  if (!chat) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Chat not found!');
+  }
+
+  if (!chat.isGroupChat) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'You cannot add members to a 1-to-1 chat!',
+    );
+  }
+
+  // validate members
+  const validMembers = await User.find({
+    _id: { $in: members },
+    isDeleted: false,
+    status: USER_STATUS.ACTIVE,
+  }).select('_id');
+  if (validMembers.length !== members.length) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Invalid member provided!');
+  }
+
+  const result = await Chat.findByIdAndUpdate(
+    chatId,
+    { $addToSet: { participants: members } },
+    { new: true },
+  );
+
+  return result;
+};
+
 // ---------------- join chat ----------------
 const joinChatIntoDB = async (chatId: string, userId: string) => {
   // 1️. Validate user exists
@@ -387,6 +420,7 @@ export const ChatServices = {
   create1To1ChatIntoDB,
   createGroupChatIntoDB,
   updateChatIntoDB,
+  addMemberToChatIntoDB,
   joinChatIntoDB,
   leaveChatFromDB,
   deleteChatFromDB,

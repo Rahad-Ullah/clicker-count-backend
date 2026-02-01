@@ -45,8 +45,23 @@ const updateChatValidation = z.object({
     .strict(),
 });
 
+// add member to chat
+const addMemberToChatValidation = z.object({
+  params: z.object({
+    id: objectId('Invalid chat ID'),
+  }),
+  body: z
+    .object({
+      members: z
+        .array(objectId('Invalid participant ID'))
+        .min(1, 'Minimum 1 participants are required'),
+    })
+    .strict(),
+})
+
 export const ChatValidations = {
   create1to1ChatValidation,
   createGroupChatValidation,
   updateChatValidation,
+  addMemberToChatValidation
 };
