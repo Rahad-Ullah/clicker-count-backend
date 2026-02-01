@@ -1,4 +1,4 @@
 export enum SupportStatus {
-  Pending = 'Pending',
-  Resolved = 'Resolved',
+  Pending = 'pending',
+  Resolved = 'resolved',
 }
