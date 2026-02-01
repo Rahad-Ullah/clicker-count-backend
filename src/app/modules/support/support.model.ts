@@ -12,13 +12,14 @@ const supportSchema = new Schema<ISupport, SupportModel>(
     },
     title: { type: String, required: true },
     message: { type: String, required: true },
+    attachments: [{ type: String, default: [] }],
     status: {
       type: String,
       enum: Object.values(SupportStatus),
       default: SupportStatus.Pending,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Support = model<ISupport, SupportModel>('Support', supportSchema);

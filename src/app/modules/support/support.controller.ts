@@ -1,14 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { SupportServices } from './support.service';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { StatusCodes } from 'http-status-codes';
+import {
+  getMultipleFilesPath,
+} from '../../../shared/getFilePath';
 
 // create support
 const createSupport = catchAsync(async (req: Request, res: Response) => {
+  const images = getMultipleFilesPath(req.files, 'image');
   const result = await SupportServices.createSupport({
     ...req.body,
     user: req.user?.id,
+    attachments: images || [],
   });
 
   sendResponse(res, {

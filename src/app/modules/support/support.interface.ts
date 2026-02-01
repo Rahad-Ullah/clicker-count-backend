@@ -6,6 +6,7 @@ export interface ISupport {
   user: Types.ObjectId;
   title: string;
   message: string;
+  attachments: string[];
   status: SupportStatus;
 }
 

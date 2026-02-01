@@ -4,6 +4,7 @@ import auth from '../../middlewares/auth';
 import { USER_ROLES } from '../user/user.constant';
 import validateRequest from '../../middlewares/validateRequest';
 import { SupportValidations } from './support.validation';
+import fileUploadHandler from '../../middlewares/fileUploadHandler';
 
 const router = express.Router();
 
@@ -11,8 +12,9 @@ const router = express.Router();
 router.post(
   '/create',
   auth(USER_ROLES.USER),
+  fileUploadHandler(),
   validateRequest(SupportValidations.createSupportSchema),
-  SupportController.createSupport
+  SupportController.createSupport,
 );
 
 // update support
