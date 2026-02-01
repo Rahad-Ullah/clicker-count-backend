@@ -21,7 +21,23 @@ const updateJoinRequest = z.object({
     .strict(),
 });
 
+// get pending request
+const getPendingRequest = z.object({
+  params: z
+    .object({
+      id: objectId('Invalid chat ID'),
+    })
+    .strict(),
+  query: z
+    .object({
+      page: z.number().optional(),
+      limit: z.number().optional(),
+    })
+    .strict(),
+});
+
 export const JoinRequestValidations = {
   createJoinRequest,
   updateJoinRequest,
+  getPendingRequest,
 };

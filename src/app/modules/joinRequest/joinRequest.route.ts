@@ -23,4 +23,11 @@ router.patch(
   JoinRequestController.updateJoinRequest,
 );
 
+// get pending requests
+router.get(
+  '/chat/:id',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  JoinRequestController.getPendingRequests,
+);
+
 export const joinRequestRoutes = router;

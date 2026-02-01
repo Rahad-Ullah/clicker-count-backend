@@ -34,7 +34,23 @@ const updateJoinRequest = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get pending requests
+const getPendingRequests = catchAsync(async (req: Request, res: Response) => {
+  const result = await JoinRequestServices.getPendingRequestByChatId(
+    req.params.id,
+    req.query
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Join request fetched successfully',
+    data: result,
+  });
+});
+
 export const JoinRequestController = {
   createJoinRequest,
   updateJoinRequest,
+  getPendingRequests,
 };

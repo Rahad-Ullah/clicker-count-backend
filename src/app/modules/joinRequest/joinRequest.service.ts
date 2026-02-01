@@ -6,6 +6,7 @@ import { JoinRequest } from './joinRequest.model';
 import { Chat } from '../chat/chat.model';
 import mongoose from 'mongoose';
 import { CHAT_ACCESS_TYPE } from '../chat/chat.constant';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 // -------------- create join request --------------
 const createJoinRequestIntoDB = async (payload: IJoinRequest) => {
@@ -49,7 +50,7 @@ const createJoinRequestIntoDB = async (payload: IJoinRequest) => {
 
   const result = await JoinRequest.create(payload);
   return result;
-};;
+};
 
 // -------------- update join request --------------
 const updateJoinRequestIntoDB = async (
@@ -100,7 +101,32 @@ const updateJoinRequestIntoDB = async (
   }
 };
 
+// -------------- get pending request by chat id --------------
+const getPendingRequestByChatId = async (
+  chatId: string,
+  query: Record<string, any>,
+) => {
+  const requestQuery = new QueryBuilder(
+    JoinRequest.find({ chat: chatId, status: JOIN_REQUEST_STATUS.PENDING }),
+    query,
+  )
+    .sort()
+    .fields()
+    .paginate();
+
+  const [data, pagination] = await Promise.all([
+    requestQuery.modelQuery.lean(),
+    requestQuery.getPaginationInfo(),
+  ]);
+
+  return {
+    data,
+    pagination,
+  };
+};
+
 export const JoinRequestServices = {
   createJoinRequestIntoDB,
   updateJoinRequestIntoDB,
+  getPendingRequestByChatId,
 };
