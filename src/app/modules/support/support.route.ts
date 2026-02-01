@@ -19,10 +19,10 @@ router.post(
 
 // update support
 router.patch(
-  '/:id',
+  '/update/:id',
   auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   validateRequest(SupportValidations.updateSupportSchema),
-  SupportController.updateSupport
+  SupportController.updateSupport,
 );
 
 // get all support
