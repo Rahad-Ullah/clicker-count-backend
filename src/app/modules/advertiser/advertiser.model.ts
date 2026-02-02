@@ -9,7 +9,7 @@ const advertiserSchema = new Schema<IAdvertiser, AdvertiserModel>(
     logo: { type: String, required: true },
     licenseNumber: { type: String, required: true },
     phone: { type: String, required: true },
-    bio: { type: String, default: '' },
+    bio: { type: String, required: true },
     isDeleted: { type: Boolean, default: false },
   },
   {

@@ -12,6 +12,7 @@ import { ChatRoutes } from '../app/modules/chat/chat.route';
 import { notificationRoutes } from '../app/modules/notification/notification.route';
 import { MessageRoutes } from '../app/modules/message/message.route';
 import { joinRequestRoutes } from '../app/modules/joinRequest/joinRequest.route';
+import { advertiserRoutes } from '../app/modules/advertiser/advertiser.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -22,6 +23,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/users',
     route: UserRoutes,
+  },
+  {
+    path: '/advertisers',
+    route: advertiserRoutes,
   },
   {
     path: '/auth',
