@@ -60,8 +60,34 @@ const updateAdvertiserByUserId = catchAsync(
   },
 );
 
+// get advertiser by user id
+const getAdvertiserByUserId = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdvertiserServices.getAdvertiserByUserId(req.params.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Advertiser fetched successfully',
+    data: result,
+  });
+});
+
+// get my advertiser profile
+const getMyAdvertiserProfile = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdvertiserServices.getAdvertiserByUserId(req.user.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Advertiser fetched successfully',
+    data: result,
+  });
+});
+
 export const AdvertiserController = {
   createAdvertiser,
   verifyAdvertiser,
   updateAdvertiserByUserId,
+  getAdvertiserByUserId,
+  getMyAdvertiserProfile,
 };

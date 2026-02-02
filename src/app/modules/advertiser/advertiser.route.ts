@@ -33,4 +33,18 @@ router.patch(
   AdvertiserController.updateAdvertiserByUserId,
 );
 
+// get advertiser by user id
+router.get(
+  '/user/:id',
+  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  AdvertiserController.getAdvertiserByUserId,
+);
+
+// get my advertiser profile
+router.get(
+  '/me',
+  auth(USER_ROLES.USER),
+  AdvertiserController.getMyAdvertiserProfile,
+);
+
 export const advertiserRoutes = router;

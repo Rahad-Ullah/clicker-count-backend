@@ -108,7 +108,10 @@ const createAdvertiser = async (payload: IAdvertiser) => {
 };
 
 // ---------------- verify advertiser ----------------
-const verifyAdvertiser = async (payload: { email: string; oneTimeCode: number }) => {
+const verifyAdvertiser = async (payload: {
+  email: string;
+  oneTimeCode: number;
+}) => {
   const { email, oneTimeCode } = payload;
   const user = await User.findOne({ email }).select('+authentication');
   if (!user) {
@@ -150,7 +153,7 @@ const verifyAdvertiser = async (payload: { email: string; oneTimeCode: number })
   );
 
   return { accessToken, role: user.role };
-};;
+};
 
 // ---------------- update by user id ----------------
 const updateAdvertiserByUserId = async (
@@ -175,8 +178,19 @@ const updateAdvertiserByUserId = async (
   return result;
 };
 
+// ---------------- get advertiser by user id ---------------
+const getAdvertiserByUserId = async (userId: string) => {
+  const result = await Advertiser.findOne({ user: userId }).populate(
+    'user',
+    'name email image gender dob bio address location',
+  );
+
+  return result;
+};
+
 export const AdvertiserServices = {
   createAdvertiser,
   verifyAdvertiser,
   updateAdvertiserByUserId,
+  getAdvertiserByUserId,
 };
