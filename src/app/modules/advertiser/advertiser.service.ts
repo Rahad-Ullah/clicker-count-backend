@@ -12,6 +12,7 @@ import { jwtHelper } from '../../../helpers/jwtHelper';
 import config from '../../../config';
 import { Secret } from 'jsonwebtoken';
 import unlinkFile from '../../../shared/unlinkFile';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 // ---------------- create advertiser ----------------
 const createAdvertiser = async (payload: IAdvertiser) => {
@@ -188,9 +189,33 @@ const getAdvertiserByUserId = async (userId: string) => {
   return result;
 };
 
+// ---------------- get all advertisers ----------------
+const getAllAdvertisers = async (query: Record<string, unknown>) => {
+  const advertiserQuery = new QueryBuilder(
+    Advertiser.find({}).populate(
+      'user',
+      'name email image gender dob bio address location',
+    ),
+    query,
+  )
+    .search(['businessName', 'businessType', 'phone'])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const [data, pagination] = await Promise.all([
+    advertiserQuery.modelQuery.lean(),
+    advertiserQuery.getPaginationInfo(),
+  ]);
+
+  return { data, pagination };
+};
+
 export const AdvertiserServices = {
   createAdvertiser,
   verifyAdvertiser,
   updateAdvertiserByUserId,
   getAdvertiserByUserId,
+  getAllAdvertisers,
 };

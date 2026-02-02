@@ -84,10 +84,24 @@ const getMyAdvertiserProfile = catchAsync(async (req: Request, res: Response) =>
   });
 });
 
+// get all advertisers
+const getAllAdvertisers = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdvertiserServices.getAllAdvertisers(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Advertisers fetched successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
 export const AdvertiserController = {
   createAdvertiser,
   verifyAdvertiser,
   updateAdvertiserByUserId,
   getAdvertiserByUserId,
   getMyAdvertiserProfile,
+  getAllAdvertisers,
 };

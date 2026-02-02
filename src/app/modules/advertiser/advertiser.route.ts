@@ -39,12 +39,19 @@ router.get(
   auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
   AdvertiserController.getAdvertiserByUserId,
 );
-
+ 
 // get my advertiser profile
 router.get(
   '/me',
   auth(USER_ROLES.USER),
   AdvertiserController.getMyAdvertiserProfile,
+);
+
+// get all advertisers
+router.get(
+  '/',
+  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  AdvertiserController.getAllAdvertisers,
 );
 
 export const advertiserRoutes = router;
