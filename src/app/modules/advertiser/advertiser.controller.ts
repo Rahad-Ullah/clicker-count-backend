@@ -39,7 +39,29 @@ const verifyAdvertiser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// update advertiser
+const updateAdvertiserByUserId = catchAsync(
+  async (req: Request, res: Response) => {
+    const logo = getSingleFilePath(req.files, 'image');
+    if (logo) {
+      req.body.logo = logo;
+    }
+    const result = await AdvertiserServices.updateAdvertiserByUserId(
+      req.user.id,
+      req.body,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Advertiser updated successfully',
+      data: result,
+    });
+  },
+);
+
 export const AdvertiserController = {
   createAdvertiser,
   verifyAdvertiser,
+  updateAdvertiserByUserId,
 };

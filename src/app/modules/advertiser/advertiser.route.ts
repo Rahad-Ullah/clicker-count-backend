@@ -24,4 +24,13 @@ router.post(
   AdvertiserController.verifyAdvertiser,
 );
 
+// update advertiser
+router.patch(
+  '/update/me',
+  auth(USER_ROLES.USER),
+  fileUploadHandler(),
+  validateRequest(AdvertiserValidations.updateAdvertiserValidation),
+  AdvertiserController.updateAdvertiserByUserId,
+);
+
 export const advertiserRoutes = router;

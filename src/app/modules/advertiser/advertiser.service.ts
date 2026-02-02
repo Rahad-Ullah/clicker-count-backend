@@ -11,6 +11,7 @@ import { emailTemplate } from '../../../shared/emailTemplate';
 import { jwtHelper } from '../../../helpers/jwtHelper';
 import config from '../../../config';
 import { Secret } from 'jsonwebtoken';
+import unlinkFile from '../../../shared/unlinkFile';
 
 // ---------------- create advertiser ----------------
 const createAdvertiser = async (payload: IAdvertiser) => {
@@ -117,7 +118,7 @@ const verifyAdvertiser = async (payload: { email: string; oneTimeCode: number })
   if (!oneTimeCode) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'Please give the otp, check your email we send a code'
+      'Please give the otp, check your email we send a code',
     );
   }
 
@@ -129,30 +130,53 @@ const verifyAdvertiser = async (payload: { email: string; oneTimeCode: number })
   if (date > user.authentication?.expireAt) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'Otp already expired, Please try again'
+      'Otp already expired, Please try again',
     );
   }
 
-    await User.findOneAndUpdate(
-      { _id: user._id },
-      {
-        isVerified: true,
-        authentication: { oneTimeCode: null, expireAt: null },
-      },
-    );
+  await User.findOneAndUpdate(
+    { _id: user._id },
+    {
+      isVerified: true,
+      authentication: { oneTimeCode: null, expireAt: null },
+    },
+  );
 
-    //create access token
-    const accessToken = jwtHelper.createToken(
-      { id: user._id, role: user.role, email: user.email },
-      config.jwt.jwt_secret as Secret,
-      config.jwt.jwt_expire_in as string,
-    );
+  //create access token
+  const accessToken = jwtHelper.createToken(
+    { id: user._id, role: user.role, email: user.email },
+    config.jwt.jwt_secret as Secret,
+    config.jwt.jwt_expire_in as string,
+  );
 
-    return { accessToken, role: user.role };
+  return { accessToken, role: user.role };
+};;
+
+// ---------------- update by user id ----------------
+const updateAdvertiserByUserId = async (
+  userId: string,
+  payload: IAdvertiser,
+) => {
+  // check if advertiser exists
+  const advertiser = await Advertiser.findOne({ user: userId });
+  if (!advertiser) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'You are not an advertiser');
   }
 
+  const result = await Advertiser.findByIdAndUpdate(advertiser._id, payload, {
+    new: true,
+  });
+
+  // unlink old logo
+  if (payload.logo && advertiser.logo && result) {
+    await unlinkFile(advertiser.logo);
+  }
+
+  return result;
+};
 
 export const AdvertiserServices = {
   createAdvertiser,
   verifyAdvertiser,
+  updateAdvertiserByUserId,
 };
