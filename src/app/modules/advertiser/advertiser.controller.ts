@@ -27,6 +27,19 @@ const createAdvertiser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// verify advertiser
+const verifyAdvertiser = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdvertiserServices.verifyAdvertiser(req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Advertiser verified successfully',
+    data: result,
+  });
+});
+
 export const AdvertiserController = {
   createAdvertiser,
+  verifyAdvertiser,
 };

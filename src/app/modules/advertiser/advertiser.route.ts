@@ -17,4 +17,11 @@ router.post(
   AdvertiserController.createAdvertiser,
 );
 
+// verify advertiser
+router.post(
+  '/verify',
+  validateRequest(AdvertiserValidations.verifyAdvertiserValidation),
+  AdvertiserController.verifyAdvertiser,
+);
+
 export const advertiserRoutes = router;

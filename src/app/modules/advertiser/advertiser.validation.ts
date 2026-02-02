@@ -41,7 +41,18 @@ const updateAdvertiserValidation = z.object({
     .strict(),
 });
 
+// verify advertiser validation
+const verifyAdvertiserValidation = z.object({
+  body: z
+    .object({
+      email: z.string().email('Invalid email format'),
+      oneTimeCode: z.number().nonnegative('Invalid one time code'),
+    })
+    .strict(),
+});
+
 export const AdvertiserValidations = {
   createAdvertiserValidation,
   updateAdvertiserValidation,
+  verifyAdvertiserValidation,
 };

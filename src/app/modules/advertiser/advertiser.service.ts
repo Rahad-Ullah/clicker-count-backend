@@ -106,6 +106,53 @@ const createAdvertiser = async (payload: IAdvertiser) => {
   };
 };
 
+// ---------------- verify advertiser ----------------
+const verifyAdvertiser = async (payload: { email: string; oneTimeCode: number }) => {
+  const { email, oneTimeCode } = payload;
+  const user = await User.findOne({ email }).select('+authentication');
+  if (!user) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  if (!oneTimeCode) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Please give the otp, check your email we send a code'
+    );
+  }
+
+  if (user.authentication?.oneTimeCode !== oneTimeCode) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'You provided wrong otp');
+  }
+
+  const date = new Date();
+  if (date > user.authentication?.expireAt) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Otp already expired, Please try again'
+    );
+  }
+
+    await User.findOneAndUpdate(
+      { _id: user._id },
+      {
+        isVerified: true,
+        authentication: { oneTimeCode: null, expireAt: null },
+      },
+    );
+
+    //create access token
+    const accessToken = jwtHelper.createToken(
+      { id: user._id, role: user.role, email: user.email },
+      config.jwt.jwt_secret as Secret,
+      config.jwt.jwt_expire_in as string,
+    );
+
+    return { accessToken, role: user.role };
+  }
+
+
 export const AdvertiserServices = {
   createAdvertiser,
+  verifyAdvertiser,
 };

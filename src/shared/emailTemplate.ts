@@ -36,7 +36,7 @@ const createAccount = (values: ICreateAccount) => {
 const resetPassword = (values: IResetPassword) => {
   const data = {
     to: values.email,
-    subject: 'Reset your password',
+    subject: 'Your account verification code',
     html: `
       <body style="font-family: 'Trebuchet MS', sans-serif; background-color: #f9f9f9; margin: 50px; padding: 20px; color: #555;">
           <div
