@@ -11,7 +11,7 @@ const auth =
     try {
       let token;
       const cookiesToken = req.cookies.accessToken;
-      const headersToken = req.headers.accessToken;
+      const headersToken = req.headers.authorization;
       if (cookiesToken) token = cookiesToken;
       if (headersToken) token = headersToken;
       if (!token) {
