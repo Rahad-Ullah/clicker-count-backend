@@ -7,6 +7,14 @@ import { AuthService } from './auth.service';
 const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   const { ...verifyData } = req.body;
   const result = await AuthService.verifyEmailToDB(verifyData);
+  // set cookie
+  if (result?.data?.accessToken) {
+    const cookieOptions = {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+    };
+    res.cookie('accessToken', result.data?.accessToken, cookieOptions);
+  }
 
   sendResponse(res, {
     success: true,
@@ -19,6 +27,12 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
 const loginUser = catchAsync(async (req: Request, res: Response) => {
   const { ...loginData } = req.body;
   const result = await AuthService.loginUserFromDB(loginData);
+  // set cookie
+  const cookieOptions = {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+  };
+  res.cookie('accessToken', result.accessToken, cookieOptions);
 
   sendResponse(res, {
     success: true,

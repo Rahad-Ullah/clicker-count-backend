@@ -3,6 +3,6 @@ import { AdvertisementController } from './advertisement.controller';
 
 const router = express.Router();
 
-router.get('/', AdvertisementController);
+// router.get('/', AdvertisementController);
 
 export const advertisementRoutes = router;

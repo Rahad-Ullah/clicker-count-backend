@@ -19,6 +19,15 @@ const createAdvertiser = catchAsync(async (req: Request, res: Response) => {
     logo,
   });
 
+  // set cookie
+  if (result?.data?.accessToken) {
+    const cookieOptions = {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+    };
+    res.cookie('accessToken', result.data?.accessToken, cookieOptions);
+  }
+
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
@@ -30,6 +39,15 @@ const createAdvertiser = catchAsync(async (req: Request, res: Response) => {
 // verify advertiser
 const verifyAdvertiser = catchAsync(async (req: Request, res: Response) => {
   const result = await AdvertiserServices.verifyAdvertiser(req.body);
+
+  // set cookie
+  if (result?.accessToken) {
+    const cookieOptions = {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+    };
+    res.cookie('accessToken', result?.accessToken, cookieOptions);
+  }
 
   sendResponse(res, {
     success: true,
