@@ -9,15 +9,36 @@ const auth =
   (...roles: string[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // const tokenWithBearer = req.headers.authorization;
-      const tokenWithBearer = req.cookies.accessToken;
-      if (!tokenWithBearer) {
+      let token;
+      const cookiesToken = req.cookies.accessToken;
+      const headersToken = req.headers.accessToken;
+      if (cookiesToken) token = cookiesToken;
+      if (headersToken) token = headersToken;
+      if (!token) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
       }
 
-      if (tokenWithBearer.startsWith('Bearer')) {
-        const token = tokenWithBearer.split(' ')[1];
+      if (token.startsWith('Bearer')) {
+        const splitToken = token.split(' ')[1];
 
+        //verify token
+        const verifyUser = jwtHelper.verifyToken(
+          splitToken,
+          config.jwt.jwt_secret as Secret,
+        );
+        //set user to header
+        req.user = verifyUser;
+
+        //guard user
+        if (roles.length && !roles.includes(verifyUser.role)) {
+          throw new ApiError(
+            StatusCodes.FORBIDDEN,
+            "You don't have permission to access this api",
+          );
+        }
+
+        next();
+      } else if (token) {
         //verify token
         const verifyUser = jwtHelper.verifyToken(
           token,

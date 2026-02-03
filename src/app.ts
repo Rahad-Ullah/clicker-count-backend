@@ -5,6 +5,7 @@ import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import router from './routes';
 import { Morgan } from './shared/morgen';
 import config from './config';
+import cookieParser from 'cookie-parser';
 const app = express();
 
 //morgan
@@ -12,9 +13,15 @@ app.use(Morgan.successHandler);
 app.use(Morgan.errorHandler);
 
 //body parser
-app.use(cors());
+app.use(
+  cors({
+    origin: [],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 //file retrieve
 app.use(express.static('uploads'));
