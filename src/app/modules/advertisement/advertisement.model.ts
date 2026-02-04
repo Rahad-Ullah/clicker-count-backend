@@ -69,6 +69,8 @@ const advertisementSchema = new Schema<IAdvertisement, AdvertisementModel>(
   },
 );
 
+advertisementSchema.index({ focusAreaLocation: '2dsphere' });
+
 export const Advertisement = model<IAdvertisement, AdvertisementModel>(
   'Advertisement',
   advertisementSchema,

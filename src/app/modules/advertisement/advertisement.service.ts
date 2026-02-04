@@ -9,7 +9,9 @@ import { Plan } from '../plan/plan.model';
 import mongoose from 'mongoose';
 import unlinkFile from '../../../shared/unlinkFile';
 import QueryBuilder from '../../builder/QueryBuilder';
-import { AD_STATUS } from './advertisement.constants';
+import { AD_STATUS, PAYMENT_STATUS } from './advertisement.constants';
+import { User } from '../user/user.model';
+import { Setting } from '../setting/setting.model';
 
 // ----------------- create advertisement -----------------
 
@@ -180,6 +182,33 @@ const getAllAdvertisements = async (query: Record<string, unknown>) => {
   return { data, pagination };
 }
 
+// ----------------- get active advertisement -----------------
+const getActiveAdvertisements = async (userId: string) => {
+  const user = await User.findById(userId).select('location');
+  if (!user || !user.location) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User location not found');
+  }
+
+  const setting = await Setting.findOne().select('nearbyRange');
+
+  const nearbyAds = await Advertisement.find({
+    focusAreaLocation: {
+      $near: {
+        $geometry: {
+          type: 'Point',
+          coordinates: user.location.coordinates, // [lng, lat]
+        },
+        $maxDistance: (setting?.nearbyRange || 50) * 1000, // meters
+      },
+    },
+    isDeleted: false,
+    status: AD_STATUS.Active,
+    paymentStatus: PAYMENT_STATUS.Paid,
+  }).select('title image websiteUrl');
+
+  return nearbyAds;
+};
+
 // ----------------- get advertiser overview -----------------
 export const getAdvertiserOverview = async (userId: string) => {
   const overview = await Advertisement.aggregate([
@@ -239,5 +268,6 @@ export const AdvertisementServices = {
   deleteAdvertisementFromDB,
   getAdvertisementsByUserId,
   getAllAdvertisements,
+  getActiveAdvertisements,
   getAdvertiserOverview,
 };

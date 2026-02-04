@@ -124,6 +124,18 @@ const getAllAdvertisements = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get nearby active ads
+const getNearbyActiveAds = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdvertisementServices.getActiveAdvertisements(req.user.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Nearby active advertisements fetched successfully',
+    data: result,
+  });
+});
+
 // get my advertisement overview
 const getMyAdvertisementOverview = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -145,5 +157,6 @@ export const AdvertisementController = {
   deleteAdvertisement,
   getMyAdvertisements,
   getAllAdvertisements,
+  getNearbyActiveAds,
   getMyAdvertisementOverview,
 };

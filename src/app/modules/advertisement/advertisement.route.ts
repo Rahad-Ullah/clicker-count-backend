@@ -56,6 +56,13 @@ router.get(
   AdvertisementController.getAllAdvertisements,
 );
 
+// get nearby active ads
+router.get(
+  '/nearby-active',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  AdvertisementController.getNearbyActiveAds,
+);
+
 // get my advertisement overview
 router.get(
   '/overview/me',
