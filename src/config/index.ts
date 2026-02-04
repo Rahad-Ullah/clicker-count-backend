@@ -10,6 +10,7 @@ export default {
   port: process.env.PORT,
   port_dev: process.env.PORT_DEV,
   bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
+  frontend_url: process.env.FRONTEND_URL,
   jwt: {
     jwt_secret: process.env.JWT_SECRET,
     jwt_expire_in: process.env.JWT_EXPIRE_IN,
@@ -24,6 +25,11 @@ export default {
   super_admin: {
     email: process.env.SUPER_ADMIN_EMAIL,
     password: process.env.SUPER_ADMIN_PASSWORD,
+  },
+  stripe: {
+    public_key: process.env.STRIPE_PUBLIC_KEY,
+    secret_key: process.env.STRIPE_SECRET_KEY,
+    webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
   },
   google: {
     package_name: process.env.GOOGLE_PACKAGE_NAME,

@@ -1,8 +1,20 @@
 import express from 'express';
 import { AdvertisementController } from './advertisement.controller';
+import auth from '../../middlewares/auth';
+import { USER_ROLES } from '../user/user.constant';
+import validateRequest from '../../middlewares/validateRequest';
+import { AdvertisementValidations } from './advertisement.validation';
+import fileUploadHandler from '../../middlewares/fileUploadHandler';
 
 const router = express.Router();
 
-// router.get('/', AdvertisementController);
+// create advertisement
+router.post(
+  '/create',
+  auth(USER_ROLES.ADVERTISER),
+  fileUploadHandler(),
+  validateRequest(AdvertisementValidations.createAdvertisementValidation),
+  AdvertisementController.createAdvertisement,
+);
 
 export const advertisementRoutes = router;

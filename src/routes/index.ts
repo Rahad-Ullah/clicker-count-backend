@@ -13,6 +13,7 @@ import { notificationRoutes } from '../app/modules/notification/notification.rou
 import { MessageRoutes } from '../app/modules/message/message.route';
 import { joinRequestRoutes } from '../app/modules/joinRequest/joinRequest.route';
 import { advertiserRoutes } from '../app/modules/advertiser/advertiser.route';
+import { advertisementRoutes } from '../app/modules/advertisement/advertisement.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -23,10 +24,6 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/users',
     route: UserRoutes,
-  },
-  {
-    path: '/advertisers',
-    route: advertiserRoutes,
   },
   {
     path: '/auth',
@@ -59,6 +56,14 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/notifications',
     route: notificationRoutes,
+  },
+  {
+    path: '/advertisers',
+    route: advertiserRoutes,
+  },
+  {
+    path: '/advertisements',
+    route: advertisementRoutes,
   },
   {
     path: '/supports',
