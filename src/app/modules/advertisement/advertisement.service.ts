@@ -9,6 +9,7 @@ import { Plan } from '../plan/plan.model';
 import mongoose from 'mongoose';
 import unlinkFile from '../../../shared/unlinkFile';
 import QueryBuilder from '../../builder/QueryBuilder';
+import { AD_STATUS } from './advertisement.constants';
 
 // ----------------- create advertisement -----------------
 
@@ -178,6 +179,58 @@ const getAllAdvertisements = async (query: Record<string, unknown>) => {
 
   return { data, pagination };
 }
+
+// ----------------- get advertiser overview -----------------
+export const getAdvertiserOverview = async (userId: string) => {
+  const overview = await Advertisement.aggregate([
+    // 1️. Filter by user and non-deleted ads
+    {
+      $match: {
+        advertiser: new mongoose.Types.ObjectId(userId),
+        isDeleted: false,
+        status: AD_STATUS.Active, // Only active ads for totalActiveAds
+      },
+    },
+    // 2️. Group and calculate totals
+    {
+      $group: {
+        _id: null,
+        totalActiveAds: { $sum: 1 },
+        totalReachCount: { $sum: '$reachCount' },
+        totalClickCount: { $sum: '$clickCount' },
+      },
+    },
+    // 3️. Calculate engagement rate
+    {
+      $project: {
+        _id: 0,
+        totalActiveAds: 1,
+        totalReachCount: 1,
+        totalClickCount: 1,
+        engagementRate: {
+          $cond: [
+            { $eq: ['$totalReachCount', 0] },
+            0,
+            {
+              $multiply: [
+                { $divide: ['$totalClickCount', '$totalReachCount'] },
+                100,
+              ],
+            },
+          ],
+        },
+      },
+    },
+  ]);
+
+  // Return default values if no ads found
+  return overview[0] || {
+    totalActiveAds: 0,
+    totalReachCount: 0,
+    totalClickCount: 0,
+    engagementRate: 0,
+  };
+};
  
 export const AdvertisementServices = {
   createAdvertisementIntoDB,
@@ -186,4 +239,5 @@ export const AdvertisementServices = {
   deleteAdvertisementFromDB,
   getAdvertisementsByUserId,
   getAllAdvertisements,
+  getAdvertiserOverview,
 };

@@ -56,4 +56,11 @@ router.get(
   AdvertisementController.getAllAdvertisements,
 );
 
+// get my advertisement overview
+router.get(
+  '/overview/me',
+  auth(USER_ROLES.ADVERTISER),
+  AdvertisementController.getMyAdvertisementOverview,
+);
+
 export const advertisementRoutes = router;

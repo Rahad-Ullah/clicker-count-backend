@@ -124,6 +124,20 @@ const getAllAdvertisements = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get my advertisement overview
+const getMyAdvertisementOverview = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await AdvertisementServices.getAdvertiserOverview(req.user.id);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'My advertisement overview fetched successfully',
+      data: result,
+    });
+  },
+);
+
 export const AdvertisementController = {
   createAdvertisement,
   updateAdvertisement,
@@ -131,4 +145,5 @@ export const AdvertisementController = {
   deleteAdvertisement,
   getMyAdvertisements,
   getAllAdvertisements,
+  getMyAdvertisementOverview,
 };
