@@ -24,19 +24,19 @@ export const createAdvertisementIntoDB = async (payload: IAdvertisement) => {
   }
 
   // create stripe checkout session
-  const res = await stripe.checkout.sessions.create({
-    line_items: [
-      {
-        price: payload.priceId,
-        quantity: 1,
-      },
-    ],
-    mode: 'payment',
-    success_url: `${config.frontend_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${config.frontend_url}/payment/cancelled/?session_id={CHECKOUT_SESSION_ID}`,
-  });
+  // const res = await stripe.checkout.sessions.create({
+  //   line_items: [
+  //     {
+  //       price: payload.priceId,
+  //       quantity: 1,
+  //     },
+  //   ],
+  //   mode: 'payment',
+  //   success_url: `${config.frontend_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+  //   cancel_url: `${config.frontend_url}/payment/cancelled?session_id={CHECKOUT_SESSION_ID}`,
+  // });
 
-  return res?.url;
+  // return res?.url;
 };
 
 export const AdvertisementServices = {

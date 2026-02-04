@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { PLAN_NAME } from './plan.constants';
 
-export const createPlanValidation = z.object({
+export const createPlanSchema = z.object({
   body: z
     .object({
       name: z.nativeEnum(PLAN_NAME),
@@ -11,5 +11,5 @@ export const createPlanValidation = z.object({
 });
 
 export const PlanValidations = {
-  createPlanValidation,
+  createPlanSchema,
 };
