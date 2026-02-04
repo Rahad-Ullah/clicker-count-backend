@@ -6,9 +6,10 @@ import { IAdvertisement } from './advertisement.interface';
 import { Advertisement } from './advertisement.model';
 import config from '../../../config';
 import { Plan } from '../plan/plan.model';
+import mongoose from 'mongoose';
+import unlinkFile from '../../../shared/unlinkFile';
 
 // ----------------- create advertisement -----------------
-import mongoose from 'mongoose';
 
 export const createAdvertisementIntoDB = async (payload: IAdvertisement) => {
   const session = await mongoose.startSession();
@@ -77,7 +78,26 @@ export const createAdvertisementIntoDB = async (payload: IAdvertisement) => {
     throw error;
   }
 };
+ 
+// ----------------- update advertisement -----------------
+const updateAdvertisementIntoDB = async (id: string, payload: Partial<IAdvertisement>) => {
+  // check if advertisement exists
+  const existingAd = await Advertisement.findById(id);
+  if (!existingAd) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Advertisement not found');
+  }
+  
+  const result = await Advertisement.findByIdAndUpdate(id, { $set: payload }, { new: true });
+  
+  // unlink old image
+  if (payload.image && existingAd.image && result) {
+    await unlinkFile(existingAd.image);
+  }
+
+  return result;
+};
 
 export const AdvertisementServices = {
   createAdvertisementIntoDB,
+  updateAdvertisementIntoDB,
 };

@@ -36,6 +36,38 @@ const createAdvertisement = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// update advertisement
+const updateAdvertisement = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const imagePath = getSingleFilePath(req.files, 'image');
+  if (imagePath) {
+    payload.image = imagePath;
+  }
+  if (payload.longitude && payload.latitude) {
+    const lng = parseFloat(payload.longitude);
+    const lat = parseFloat(payload.latitude);
+    payload.focusAreaLocation = {
+      type: 'Point',
+      coordinates: [lng, lat],
+    };
+    delete payload.longitude;
+    delete payload.latitude;
+  }
+
+  const result = await AdvertisementServices.updateAdvertisementIntoDB(
+    req.params.id,
+    payload,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Advertisement updated successfully',
+    data: result,
+  });
+});
+
 export const AdvertisementController = {
   createAdvertisement,
+  updateAdvertisement,
 };

@@ -17,4 +17,13 @@ router.post(
   AdvertisementController.createAdvertisement,
 );
 
+// update advertisement
+router.patch(
+  '/update/:id',
+  auth(USER_ROLES.ADVERTISER),
+  fileUploadHandler(),
+  validateRequest(AdvertisementValidations.updateAdvertisementValidation),
+  AdvertisementController.updateAdvertisement,
+);
+
 export const advertisementRoutes = router;

@@ -26,6 +26,9 @@ const createAdvertisementValidation = z.object({
 
 // update advertisement
 const updateAdvertisementValidation = z.object({
+  params: z.object({
+    id: objectId('Invalid advertisement ID'),
+  }),
   body: z
     .object({
       title: z.string().nonempty('Title cannot be empty').optional(),
@@ -36,12 +39,12 @@ const updateAdvertisementValidation = z.object({
       image: z.any().optional(),
       focusArea: z.string().nonempty('Focus area cannot be empty').optional(),
       longitude: z
-        .number()
+        .string()
         .min(-180, 'Longitude must be between -180 and 180')
         .max(180, 'Longitude must be between -180 and 180')
         .optional(),
       latitude: z
-        .number()
+        .string()
         .min(-90, 'Latitude must be between -90 and 90')
         .max(90, 'Latitude must be between -90 and 90')
         .optional(),
