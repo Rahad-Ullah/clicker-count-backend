@@ -6,6 +6,7 @@ import router from './routes';
 import { Morgan } from './shared/morgen';
 import config from './config';
 import cookieParser from 'cookie-parser';
+import { startCrons } from './app/cron';
 const app = express();
 
 //morgan
@@ -35,9 +36,12 @@ app.get('/', (req: Request, res: Response) => {
   res.send(
     `<h1 style="text-align:center; color:#173616; font-family:Verdana;">Beep-beep! The ${config.server_name} server is alive and kicking.</h1>
     <p style="text-align:center; color:#173616; font-family:Verdana;">${date}</p>
-    `
+    `,
   );
 });
+
+// cron job
+startCrons();
 
 //global error handle
 app.use(globalErrorHandler);
