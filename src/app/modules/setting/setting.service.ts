@@ -5,7 +5,7 @@ import { Setting } from './setting.model';
 const updateSettingToDB = async (
   payload: Partial<ISetting>,
 ): Promise<ISetting> => {
-  // create or update setting
+  // ------------ create or update setting ------------
   const result = await Setting.findOneAndUpdate({}, payload, {
     new: true,
     upsert: true,
@@ -13,6 +13,13 @@ const updateSettingToDB = async (
   return result;
 };
 
+// ------------ get setting ------------
+const getSettingFromDB = async () => {
+  const result = await Setting.findOne({});
+  return result;
+};
+
 export const SettingServices = {
   updateSettingToDB,
+  getSettingFromDB,
 };

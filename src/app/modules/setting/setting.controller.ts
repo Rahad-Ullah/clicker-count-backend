@@ -16,6 +16,19 @@ const updateSetting = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get setting
+const getSetting = catchAsync(async (req: Request, res: Response) => {
+  const result = await SettingServices.getSettingFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Setting retrieved successfully',
+    data: result,
+  });
+});
+
 export const SettingController = {
   updateSetting,
+  getSetting,
 };

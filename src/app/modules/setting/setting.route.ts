@@ -15,4 +15,11 @@ router.patch(
   SettingController.updateSetting,
 );
 
+// get setting
+router.get(
+  '/',
+  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  SettingController.getSetting,
+);
+
 export const settingRoutes = router;

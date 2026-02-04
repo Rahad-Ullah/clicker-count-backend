@@ -15,6 +15,7 @@ import { joinRequestRoutes } from '../app/modules/joinRequest/joinRequest.route'
 import { advertiserRoutes } from '../app/modules/advertiser/advertiser.route';
 import { advertisementRoutes } from '../app/modules/advertisement/advertisement.route';
 import { planRoutes } from '../app/modules/plan/plan.route';
+import { settingRoutes } from '../app/modules/setting/setting.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -77,6 +78,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/contact',
     route: contactRoutes,
+  },
+  {
+    path: '/settings',
+    route: settingRoutes,
   },
   {
     path: '/disclaimer',
