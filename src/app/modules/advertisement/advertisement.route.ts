@@ -26,4 +26,11 @@ router.patch(
   AdvertisementController.updateAdvertisement,
 );
 
+// get my advertisements
+router.get(
+  '/me',
+  auth(USER_ROLES.ADVERTISER),
+  AdvertisementController.getMyAdvertisements,
+);
+
 export const advertisementRoutes = router;

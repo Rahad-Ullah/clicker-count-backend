@@ -8,6 +8,7 @@ import config from '../../../config';
 import { Plan } from '../plan/plan.model';
 import mongoose from 'mongoose';
 import unlinkFile from '../../../shared/unlinkFile';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 // ----------------- create advertisement -----------------
 
@@ -78,17 +79,24 @@ export const createAdvertisementIntoDB = async (payload: IAdvertisement) => {
     throw error;
   }
 };
- 
+
 // ----------------- update advertisement -----------------
-const updateAdvertisementIntoDB = async (id: string, payload: Partial<IAdvertisement>) => {
+const updateAdvertisementIntoDB = async (
+  id: string,
+  payload: Partial<IAdvertisement>,
+) => {
   // check if advertisement exists
   const existingAd = await Advertisement.findById(id);
   if (!existingAd) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Advertisement not found');
   }
-  
-  const result = await Advertisement.findByIdAndUpdate(id, { $set: payload }, { new: true });
-  
+
+  const result = await Advertisement.findByIdAndUpdate(
+    id,
+    { $set: payload },
+    { new: true },
+  );
+
   // unlink old image
   if (payload.image && existingAd.image && result) {
     await unlinkFile(existingAd.image);
@@ -97,7 +105,30 @@ const updateAdvertisementIntoDB = async (id: string, payload: Partial<IAdvertise
   return result;
 };
 
+// ----------------- delete advertisement -----------------
+
+
+// ----------------- get advertisements by user id -----------------
+const getAdvertisementsByUserId = async (
+  userId: string,
+  query: Record<string, unknown>,
+) => {
+  const adQuery = new QueryBuilder(Advertisement.find({ user: userId, isDeleted: false }), query)
+    .filter()
+    .paginate()
+    .sort()
+    .fields();
+
+  const [data, pagination] = await Promise.all([
+    adQuery.modelQuery.lean(),
+    adQuery.getPaginationInfo(),
+  ]);
+
+  return { data, pagination };
+};
+
 export const AdvertisementServices = {
   createAdvertisementIntoDB,
   updateAdvertisementIntoDB,
+  getAdvertisementsByUserId,
 };

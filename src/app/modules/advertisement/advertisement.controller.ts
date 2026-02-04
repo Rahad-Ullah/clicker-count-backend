@@ -67,7 +67,21 @@ const updateAdvertisement = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get my advertisements
+const getMyAdvertisements = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdvertisementServices.getAdvertisementsByUserId(req.user.id, req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'My advertisements fetched successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
 export const AdvertisementController = {
   createAdvertisement,
   updateAdvertisement,
+  getMyAdvertisements,
 };
