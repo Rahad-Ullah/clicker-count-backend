@@ -28,7 +28,20 @@ const deletePlan = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get all plans
+const getAllPlans = catchAsync(async (req: Request, res: Response) => {
+  const result = await PlanServices.getAllPlansFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Plans retrieved successfully',
+    data: result,
+  });
+});
+
 export const PlanController = {
   createPlan,
   deletePlan,
+  getAllPlans,
 };

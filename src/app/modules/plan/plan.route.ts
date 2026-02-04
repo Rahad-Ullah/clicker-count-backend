@@ -22,4 +22,11 @@ router.delete(
   PlanController.deletePlan,
 );
 
+// get all plans
+router.get(
+  '/',
+  auth(),
+  PlanController.getAllPlans,
+);
+
 export const planRoutes = router;

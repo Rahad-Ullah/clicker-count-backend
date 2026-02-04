@@ -112,15 +112,20 @@ const deletePlanFromDB = async (id: string) => {
     if (session.inTransaction()) {
       await session.abortTransaction();
     }
-    // COMPENSATION (guarantee)
-    await Plan.findByIdAndUpdate(id, { isDeleted: false });
     throw error;
   } finally {
     session.endSession();
   }
 };
 
+// ------------ get all plans ------------
+const getAllPlansFromDB = async () => {
+  const result = await Plan.find({ isDeleted: false });
+  return result;
+};
+
 export const PlanServices = {
   createPlanIntoDB,
   deletePlanFromDB,
+  getAllPlansFromDB,
 };
