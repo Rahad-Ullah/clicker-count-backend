@@ -20,6 +20,7 @@ export interface IAdvertisement {
   websiteUrl: string;
   startAt: Date;
   endAt: Date;
+  plan: Types.ObjectId;
   price: number;
   paymentStatus: PAYMENT_STATUS;
   paidAt?: Date;

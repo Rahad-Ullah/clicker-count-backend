@@ -5,38 +5,77 @@ import { Advertiser } from '../advertiser/advertiser.model';
 import { IAdvertisement } from './advertisement.interface';
 import { Advertisement } from './advertisement.model';
 import config from '../../../config';
+import { Plan } from '../plan/plan.model';
 
 // ----------------- create advertisement -----------------
+import mongoose from 'mongoose';
+
 export const createAdvertisementIntoDB = async (payload: IAdvertisement) => {
-  // check if the user exists
-  const advertiser = await Advertiser.exists({ user: payload.user });
-  if (!advertiser) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'User does not exist');
+  const session = await mongoose.startSession();
+  let createdAd, plan;
+
+  try {
+    session.startTransaction();
+
+    // check advertiser
+    const advertiser = await Advertiser.findOne({ user: payload.user }, null, {
+      session,
+    }).select('_id');
+    if (!advertiser) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Advertiser does not exist');
+    }
+    payload.advertiser = advertiser._id;
+
+    // check plan
+    plan = await Plan.findById(payload.plan, null, { session }).select('price');
+    if (!plan) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Plan does not exist');
+    }
+    payload.price = plan.price;
+
+    // create advertisement (DB write)
+    createdAd = await Advertisement.create([payload], { session });
+    createdAd = createdAd[0];
+
+    await session.commitTransaction();
+  } catch (error) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    throw error;
+  } finally {
+    session.endSession();
   }
-  payload.advertiser = advertiser._id;
 
-  const result = await Advertisement.create(payload);
-  if (!result) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'Failed to create advertisement',
-    );
+  // STRIPE (outside transaction)
+  try {
+    const stripeRes = await stripe.checkout.sessions.create({
+      line_items: [
+        {
+          price: plan.stripePriceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${config.frontend_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${config.frontend_url}/payment/cancelled?session_id={CHECKOUT_SESSION_ID}`,
+      client_reference_id: payload.user.toString(),
+      metadata: {
+        advertisementId: createdAd._id.toString(),
+        advertiserId: createdAd.advertiser.toString(),
+        userId: createdAd.user.toString(),
+      },
+    });
+
+    return {
+      url: stripeRes.url,
+      sessionId: stripeRes.id,
+    };
+  } catch (error) {
+    // 5️⃣ COMPENSATION (rollback DB)
+    await Advertisement.findByIdAndDelete(createdAd._id);
+    throw error;
   }
-
-  // create stripe checkout session
-  // const res = await stripe.checkout.sessions.create({
-  //   line_items: [
-  //     {
-  //       price: payload.priceId,
-  //       quantity: 1,
-  //     },
-  //   ],
-  //   mode: 'payment',
-  //   success_url: `${config.frontend_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-  //   cancel_url: `${config.frontend_url}/payment/cancelled?session_id={CHECKOUT_SESSION_ID}`,
-  // });
-
-  // return res?.url;
 };
 
 export const AdvertisementServices = {

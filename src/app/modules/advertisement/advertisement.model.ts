@@ -38,6 +38,7 @@ const advertisementSchema = new Schema<IAdvertisement, AdvertisementModel>(
     websiteUrl: { type: String, required: true },
     startAt: { type: Date, required: true },
     endAt: { type: Date, required: true },
+    plan: { type: Schema.Types.ObjectId, ref: 'Plan', required: true },
     price: { type: Number, required: true },
     paymentStatus: {
       type: String,

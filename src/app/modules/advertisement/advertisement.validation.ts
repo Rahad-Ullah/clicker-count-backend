@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { objectId } from '../../../helpers/zodHelper';
 
 const createAdvertisementValidation = z.object({
   body: z
@@ -7,13 +8,18 @@ const createAdvertisementValidation = z.object({
       description: z.string().nonempty('Description cannot be empty'),
       image: z.any(),
       focusArea: z.string().nonempty('Focus area cannot be empty'),
-      focusAreaLocation: z
-        .array(z.number())
-        .length(2, 'Coordinates must be [longitude, latitude]'),
+      longitude: z
+        .string()
+        .min(-180, 'Longitude must be between -180 and 180')
+        .max(180, 'Longitude must be between -180 and 180'),
+      latitude: z
+        .string()
+        .min(-90, 'Latitude must be between -90 and 90')
+        .max(90, 'Latitude must be between -90 and 90'),
       websiteUrl: z.string().url('Website URL must be valid'),
       startAt: z.coerce.date(),
       endAt: z.coerce.date(),
-      price: z.number().positive('Price must be greater than 0'),
+      plan: objectId('Invalid plan ID'),
     })
     .strict(),
 });
@@ -29,9 +35,15 @@ const updateAdvertisementValidation = z.object({
         .optional(),
       image: z.any().optional(),
       focusArea: z.string().nonempty('Focus area cannot be empty').optional(),
-      focusAreaLocation: z
-        .array(z.number())
-        .length(2, 'Coordinates must be [longitude, latitude]')
+      longitude: z
+        .number()
+        .min(-180, 'Longitude must be between -180 and 180')
+        .max(180, 'Longitude must be between -180 and 180')
+        .optional(),
+      latitude: z
+        .number()
+        .min(-90, 'Latitude must be between -90 and 90')
+        .max(90, 'Latitude must be between -90 and 90')
         .optional(),
       websiteUrl: z.string().url('Website URL must be valid').optional(),
     })
