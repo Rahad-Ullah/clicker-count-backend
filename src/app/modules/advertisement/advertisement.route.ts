@@ -26,6 +26,14 @@ router.patch(
   AdvertisementController.updateAdvertisement,
 );
 
+// update advertisement approval status
+router.patch(
+  '/update-approval-status/:id',
+  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  validateRequest(AdvertisementValidations.updateAdvertisementStatusValidation),
+  AdvertisementController.updateAdvertisementStatus,
+);
+
 // delete advertisement
 router.delete(
   '/delete/:id',

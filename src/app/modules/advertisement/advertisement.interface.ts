@@ -1,5 +1,9 @@
 import { Model, Types } from 'mongoose';
-import { AD_STATUS, PAYMENT_STATUS } from './advertisement.constants';
+import {
+  AD_STATUS,
+  APPROVAL_STATUS,
+  PAYMENT_STATUS,
+} from './advertisement.constants';
 
 // Location schema type
 export interface ILocation {
@@ -27,6 +31,7 @@ export interface IAdvertisement {
   reachCount: number;
   clickCount: number;
   status: AD_STATUS;
+  approvalStatus: APPROVAL_STATUS;
   isDeleted: boolean;
 }
 

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { objectId } from '../../../helpers/zodHelper';
+import { APPROVAL_STATUS } from './advertisement.constants';
 
 const createAdvertisementValidation = z.object({
   body: z
@@ -53,15 +54,32 @@ const updateAdvertisementValidation = z.object({
     .strict(),
 });
 
+// update advertisement status
+const updateAdvertisementStatusValidation = z.object({
+  params: z
+    .object({
+      id: objectId('Invalid advertisement ID'),
+    })
+    .strict(),
+  body: z
+    .object({
+      approvalStatus: z.enum([APPROVAL_STATUS.Approved, APPROVAL_STATUS.Rejected]),
+    })
+    .strict(),
+});
+
 // delete advertisement
 const deleteAdvertisementValidation = z.object({
-  params: z.object({
-    id: objectId('Invalid advertisement ID'),
-  }).strict(),
+  params: z
+    .object({
+      id: objectId('Invalid advertisement ID'),
+    })
+    .strict(),
 });
 
 export const AdvertisementValidations = {
   createAdvertisementValidation,
   updateAdvertisementValidation,
+  updateAdvertisementStatusValidation,
   deleteAdvertisementValidation,
 };

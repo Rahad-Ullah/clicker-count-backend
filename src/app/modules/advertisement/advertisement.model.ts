@@ -1,6 +1,10 @@
 import { Schema, model } from 'mongoose';
 import { IAdvertisement, AdvertisementModel } from './advertisement.interface';
-import { AD_STATUS, PAYMENT_STATUS } from './advertisement.constants';
+import {
+  AD_STATUS,
+  APPROVAL_STATUS,
+  PAYMENT_STATUS,
+} from './advertisement.constants';
 
 const LocationSchema = new Schema(
   {
@@ -52,6 +56,11 @@ const advertisementSchema = new Schema<IAdvertisement, AdvertisementModel>(
       type: String,
       enum: Object.values(AD_STATUS),
       default: AD_STATUS.Pending,
+    },
+    approvalStatus: {
+      type: String,
+      enum: Object.values(APPROVAL_STATUS),
+      default: APPROVAL_STATUS.Pending,
     },
     isDeleted: { type: Boolean, default: false },
   },

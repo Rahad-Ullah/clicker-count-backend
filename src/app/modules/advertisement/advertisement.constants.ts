@@ -8,3 +8,9 @@ export enum AD_STATUS {
   Active = 'active',
   Inactive = 'inactive',
 }
+
+export enum APPROVAL_STATUS {
+  Pending = 'pending',
+  Approved = 'approved',
+  Rejected = 'rejected',
+}

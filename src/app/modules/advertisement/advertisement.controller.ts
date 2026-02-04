@@ -67,6 +67,23 @@ const updateAdvertisement = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// update advertisement approval status
+const updateAdvertisementStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await AdvertisementServices.updateAdvertisementStatus(
+      req.params.id,
+      req.body,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Advertisement status updated successfully',
+      data: result,
+    });
+  },
+);
+
 // delete advertisement
 const deleteAdvertisement = catchAsync(async (req: Request, res: Response) => {
   const result = await AdvertisementServices.deleteAdvertisementFromDB(
@@ -110,6 +127,7 @@ const getAllAdvertisements = catchAsync(async (req: Request, res: Response) => {
 export const AdvertisementController = {
   createAdvertisement,
   updateAdvertisement,
+  updateAdvertisementStatus,
   deleteAdvertisement,
   getMyAdvertisements,
   getAllAdvertisements,

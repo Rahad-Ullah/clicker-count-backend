@@ -105,6 +105,25 @@ const updateAdvertisementIntoDB = async (
   return result;
 };
 
+// ----------------- update advertisement approval status -----------------
+const updateAdvertisementStatus = async (
+  id: string,
+  payload: Partial<IAdvertisement>,
+) => {
+  // check if advertisement exists
+  const existingAd = await Advertisement.findById(id);
+  if (!existingAd) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Advertisement not found');
+  }
+
+  const result = await Advertisement.findByIdAndUpdate(
+    id,
+    { $set: payload },
+    { new: true },
+  );
+  return result;
+}
+
 // ----------------- delete advertisement -----------------
 const deleteAdvertisementFromDB = async (id: string) => {
   // check if advertisement exists
@@ -163,6 +182,7 @@ const getAllAdvertisements = async (query: Record<string, unknown>) => {
 export const AdvertisementServices = {
   createAdvertisementIntoDB,
   updateAdvertisementIntoDB,
+  updateAdvertisementStatus,
   deleteAdvertisementFromDB,
   getAdvertisementsByUserId,
   getAllAdvertisements,
