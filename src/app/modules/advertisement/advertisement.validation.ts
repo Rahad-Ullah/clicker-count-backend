@@ -53,7 +53,15 @@ const updateAdvertisementValidation = z.object({
     .strict(),
 });
 
+// delete advertisement
+const deleteAdvertisementValidation = z.object({
+  params: z.object({
+    id: objectId('Invalid advertisement ID'),
+  }).strict(),
+});
+
 export const AdvertisementValidations = {
   createAdvertisementValidation,
   updateAdvertisementValidation,
+  deleteAdvertisementValidation,
 };

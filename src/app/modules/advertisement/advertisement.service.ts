@@ -106,14 +106,30 @@ const updateAdvertisementIntoDB = async (
 };
 
 // ----------------- delete advertisement -----------------
+const deleteAdvertisementFromDB = async (id: string) => {
+  // check if advertisement exists
+  const existingAd = await Advertisement.exists({ _id: id });
+  if (!existingAd) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Advertisement not found');
+  }
 
+  const result = await Advertisement.findByIdAndUpdate(
+    id,
+    { isDeleted: true },
+    { new: true },
+  );
+  return result;
+};
 
 // ----------------- get advertisements by user id -----------------
 const getAdvertisementsByUserId = async (
   userId: string,
   query: Record<string, unknown>,
 ) => {
-  const adQuery = new QueryBuilder(Advertisement.find({ user: userId, isDeleted: false }), query)
+  const adQuery = new QueryBuilder(
+    Advertisement.find({ user: userId, isDeleted: false }),
+    query,
+  )
     .filter()
     .paginate()
     .sort()
@@ -130,5 +146,6 @@ const getAdvertisementsByUserId = async (
 export const AdvertisementServices = {
   createAdvertisementIntoDB,
   updateAdvertisementIntoDB,
+  deleteAdvertisementFromDB,
   getAdvertisementsByUserId,
 };

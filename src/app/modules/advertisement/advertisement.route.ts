@@ -26,6 +26,14 @@ router.patch(
   AdvertisementController.updateAdvertisement,
 );
 
+// delete advertisement
+router.delete(
+  '/delete/:id',
+  auth(USER_ROLES.ADVERTISER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  validateRequest(AdvertisementValidations.deleteAdvertisementValidation),
+  AdvertisementController.deleteAdvertisement,
+);
+
 // get my advertisements
 router.get(
   '/me',

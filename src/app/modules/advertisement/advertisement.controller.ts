@@ -67,6 +67,20 @@ const updateAdvertisement = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// delete advertisement
+const deleteAdvertisement = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdvertisementServices.deleteAdvertisementFromDB(
+    req.params.id,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Advertisement deleted successfully',
+    data: result,
+  });
+});
+
 // get my advertisements
 const getMyAdvertisements = catchAsync(async (req: Request, res: Response) => {
   const result = await AdvertisementServices.getAdvertisementsByUserId(req.user.id, req.query);
@@ -83,5 +97,6 @@ const getMyAdvertisements = catchAsync(async (req: Request, res: Response) => {
 export const AdvertisementController = {
   createAdvertisement,
   updateAdvertisement,
+  deleteAdvertisement,
   getMyAdvertisements,
 };
