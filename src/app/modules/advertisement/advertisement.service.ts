@@ -143,9 +143,27 @@ const getAdvertisementsByUserId = async (
   return { data, pagination };
 };
 
+// ----------------- get all advertisements -----------------
+const getAllAdvertisements = async (query: Record<string, unknown>) => {
+  const adQuery = new QueryBuilder(Advertisement.find({}).populate('user', 'name email image'), query)
+    .search(['title', 'description'])
+    .filter()
+    .paginate()
+    .sort()
+    .fields();
+
+  const [data, pagination] = await Promise.all([
+    adQuery.modelQuery.lean(),
+    adQuery.getPaginationInfo(),
+  ]);
+
+  return { data, pagination };
+}
+ 
 export const AdvertisementServices = {
   createAdvertisementIntoDB,
   updateAdvertisementIntoDB,
   deleteAdvertisementFromDB,
   getAdvertisementsByUserId,
+  getAllAdvertisements,
 };

@@ -94,9 +94,23 @@ const getMyAdvertisements = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get all advertisements
+const getAllAdvertisements = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdvertisementServices.getAllAdvertisements(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Advertisements fetched successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
 export const AdvertisementController = {
   createAdvertisement,
   updateAdvertisement,
   deleteAdvertisement,
   getMyAdvertisements,
+  getAllAdvertisements,
 };

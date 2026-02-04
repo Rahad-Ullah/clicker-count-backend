@@ -41,4 +41,11 @@ router.get(
   AdvertisementController.getMyAdvertisements,
 );
 
+// get all advertisements
+router.get(
+  '/all',
+  auth(),
+  AdvertisementController.getAllAdvertisements,
+);
+
 export const advertisementRoutes = router;
