@@ -16,6 +16,19 @@ const createPlan = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// delete plan
+const deletePlan = catchAsync(async (req: Request, res: Response) => {
+  const result = await PlanServices.deletePlanFromDB(req.params.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Plan deleted successfully',
+    data: result,
+  });
+});
+
 export const PlanController = {
   createPlan,
+  deletePlan,
 };

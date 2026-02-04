@@ -15,4 +15,11 @@ router.post(
   PlanController.createPlan,
 );
 
+// delete plan
+router.delete(
+  '/delete/:id',
+  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  PlanController.deletePlan,
+);
+
 export const planRoutes = router;

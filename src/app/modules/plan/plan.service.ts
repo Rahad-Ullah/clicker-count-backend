@@ -17,9 +17,9 @@ const createPlanIntoDB = async (payload: IPlan) => {
 
     // 1️. Check if plan exists (transactional)
     const existingPlan = await Plan.findOne(
-      { name: payload.name },
+      { name: payload.name, isDeleted: false },
       null,
-      { session }
+      { session },
     );
 
     if (existingPlan) {
@@ -51,7 +51,6 @@ const createPlanIntoDB = async (payload: IPlan) => {
     // 6️. Commit DB transaction
     await session.commitTransaction();
     return plan;
-
   } catch (error) {
     // DB rollback
     await session.abortTransaction();
@@ -63,14 +62,59 @@ const createPlanIntoDB = async (payload: IPlan) => {
       }
 
       if (stripeProductId) {
-        await stripe.products.del(stripeProductId);
+        await stripe.products.update(stripeProductId, { active: false });
       }
     } catch (cleanupError) {
       console.error('Stripe cleanup failed:', cleanupError);
     }
 
     throw error;
+  } finally {
+    session.endSession();
+  }
+};
 
+// --------------- delete plan ---------------
+const deletePlanFromDB = async (id: string) => {
+  const session = await mongoose.startSession();
+
+  try {
+    // DB TRANSACTION (short & safe)
+    session.startTransaction();
+
+    const plan = await Plan.findById(id, null, { session });
+    if (!plan) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Plan not found');
+    }
+
+    if (plan.isDeleted) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Plan already deleted');
+    }
+
+    const result = await Plan.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true, session },
+    );
+    await session.commitTransaction();
+
+    // STRIPE CLEANUP
+    try {
+      await stripe.prices.update(plan.stripePriceId, { active: false });
+      await stripe.products.update(plan.stripeProductId, { active: false });
+    } catch (stripeError) {
+      throw stripeError;
+    }
+
+    return result;
+  } catch (error) {
+    // rollback DB if DB failed
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    // COMPENSATION (guarantee)
+    await Plan.findByIdAndUpdate(id, { isDeleted: false });
+    throw error;
   } finally {
     session.endSession();
   }
@@ -78,4 +122,5 @@ const createPlanIntoDB = async (payload: IPlan) => {
 
 export const PlanServices = {
   createPlanIntoDB,
+  deletePlanFromDB,
 };
