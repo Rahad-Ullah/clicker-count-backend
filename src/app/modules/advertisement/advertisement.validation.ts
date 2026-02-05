@@ -19,7 +19,6 @@ const createAdvertisementValidation = z.object({
         .max(90, 'Latitude must be between -90 and 90'),
       websiteUrl: z.string().url('Website URL must be valid'),
       startAt: z.coerce.date(),
-      endAt: z.coerce.date(),
       plan: objectId('Invalid plan ID'),
     })
     .strict(),

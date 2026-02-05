@@ -12,6 +12,7 @@ import QueryBuilder from '../../builder/QueryBuilder';
 import { AD_STATUS, PAYMENT_STATUS } from './advertisement.constants';
 import { User } from '../user/user.model';
 import { Setting } from '../setting/setting.model';
+import { calculateExpireDate } from '../../../util/calculateExpireDate';
 
 // ----------------- create advertisement -----------------
 
@@ -33,12 +34,17 @@ export const createAdvertisementIntoDB = async (payload: IAdvertisement) => {
 
     // check plan
     plan = await Plan.findById(payload.plan, null, { session }).select(
-      'price stripePriceId',
+      'name price stripePriceId',
     );
     if (!plan) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Plan does not exist');
     }
     payload.price = plan.price;
+    payload.endAt = calculateExpireDate(
+      plan.name,
+      1,
+      new Date(payload.startAt),
+    );
 
     // create advertisement (DB write)
     createdAd = await Advertisement.create([payload], { session });
