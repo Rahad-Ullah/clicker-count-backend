@@ -7,11 +7,22 @@ import { Morgan } from './shared/morgen';
 import config from './config';
 import cookieParser from 'cookie-parser';
 import { startCrons } from './app/cron';
+import { stripeWebhookController } from './app/webhooks/stripe/stripe.controller';
 const app = express();
+
+// trust proxy to get client real ip
+app.set('trust proxy', true);
 
 //morgan
 app.use(Morgan.successHandler);
 app.use(Morgan.errorHandler);
+
+//stripe webhook
+app.post(
+  '/webhooks/stripe',
+  express.raw({ type: 'application/json' }),
+  stripeWebhookController,
+);
 
 //body parser
 app.use(
