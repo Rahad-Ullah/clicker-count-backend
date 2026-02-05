@@ -3,15 +3,18 @@ import { Server } from 'socket.io';
 import { logger } from '../shared/logger';
 import { Chat } from '../app/modules/chat/chat.model';
 import { socketAuth } from '../app/middlewares/socketAuth';
+import { User } from '../app/modules/user/user.model';
 
 const socket = (io: Server) => {
   // authenticate by jwt auth middleware
   io.use(socketAuth);
 
-  io.on('connection', socket => {
+  io.on('connection', async socket => {
     const userId = socket.data.userId;
 
     logger.info(colors.blue(`User connected: ${userId}`));
+    // update user status to online
+    await User.findByIdAndUpdate(userId, { isOnline: true });
 
     // join personal room
     socket.join(`user:${userId}`);
@@ -46,7 +49,9 @@ const socket = (io: Server) => {
       socket.leave(`chat:${chatId}`);
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
+      // update user status to offline
+      await User.findByIdAndUpdate(userId, { isOnline: false });
       logger.info(colors.red(`User disconnected: ${userId}`));
     });
   });
