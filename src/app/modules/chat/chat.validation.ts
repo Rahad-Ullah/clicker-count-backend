@@ -78,10 +78,21 @@ const removeMemberFromChatValidation = z.object({
     .strict(),
 })
 
+// send greetings
+const sendGreetingsToUserValidation = z.object({
+  body: z
+    .object({
+      user: objectId('Invalid user ID'),
+      text: z.string().nonempty('Message content is required'),
+    })
+    .strict(),
+})
+
 export const ChatValidations = {
   create1to1ChatValidation,
   createGroupChatValidation,
   updateChatValidation,
   addMemberToChatValidation,
-  removeMemberFromChatValidation
+  removeMemberFromChatValidation,
+  sendGreetingsToUserValidation
 };

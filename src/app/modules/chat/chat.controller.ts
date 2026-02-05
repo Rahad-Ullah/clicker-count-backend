@@ -123,6 +123,22 @@ const deleteChat = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// send greetings
+const sendGreetingsToUser = catchAsync(async (req: Request, res: Response) => {
+  const result = await ChatServices.sendGreetingsToUser(
+    req.user.id,
+    req.body.user,
+    req.body.text,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Chat created successfully',
+    data: result,
+  });
+});
+
 // get single chat
 const getSingleChat = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -167,6 +183,7 @@ export const ChatController = {
   joinChat,
   leaveChat,
   deleteChat,
+  sendGreetingsToUser,
   getSingleChat,
   getMyChats,
 };

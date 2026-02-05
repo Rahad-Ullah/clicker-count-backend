@@ -63,6 +63,14 @@ router.patch(
   ChatController.leaveChat,
 );
 
+// send greetings
+router.post(
+  '/send-greetings',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  validateRequest(ChatValidations.sendGreetingsToUserValidation),
+  ChatController.sendGreetingsToUser,
+);
+
 // delete chat
 router.delete('/:id', auth(), ChatController.deleteChat);
 

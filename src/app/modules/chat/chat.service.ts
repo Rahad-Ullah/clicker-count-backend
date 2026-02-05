@@ -17,11 +17,14 @@ import QueryBuilder from '../../builder/QueryBuilder';
 import { JoinRequest } from '../joinRequest/joinRequest.model';
 import { JOIN_REQUEST_STATUS } from '../joinRequest/joinRequest.constants';
 import unlinkFile from '../../../shared/unlinkFile';
+import { MessageServices } from '../message/message.service';
+import { MESSAGE_TYPE } from '../message/message.constant';
 
 // ---------------- create 1-to-1 chat ----------------
-export const create1To1ChatIntoDB = async (
-  payload: IChat & { participant: string },
-) => {
+export const create1To1ChatIntoDB = async (payload: {
+  participant: string;
+  author: string;
+}) => {
   // 1️. Prevent self-chat
   if (payload.participant === payload.author.toString()) {
     throw new ApiError(
@@ -148,7 +151,10 @@ const removeMemberFromChat = async (
 ) => {
   const chat = await Chat.findOne({ _id: chatId, isDeleted: false });
   if (!chat) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'Chat not found or may be deleted!');
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      'Chat not found or may be deleted!',
+    );
   }
 
   if (!chat.isGroupChat) {
@@ -332,6 +338,41 @@ const deleteChatFromDB = async (chatId: string, user: JwtPayload) => {
   return result;
 };
 
+// ---------------- send greetings ----------------
+const sendGreetingsToUser = async (
+  currentUserId: string,
+  userId: string,
+  text: string,
+) => {
+  const user = await User.exists({ _id: userId, isDeleted: false });
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+  }
+
+  // create chat
+  const chat = await ChatServices.create1To1ChatIntoDB({
+    participant: userId,
+    author: currentUserId,
+  });
+  if (!chat) {
+    throw new ApiError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      'Chat creation failed',
+    );
+  }
+
+  // create message
+  const messagePayload = {
+    chat: chat._id.toString(),
+    sender: currentUserId,
+    type: MESSAGE_TYPE.TEXT,
+    content: text,
+  } as any;
+  const result = await MessageServices.createMessage(messagePayload);
+
+  return result;
+};
+
 // ---------------- get single chat by id ----------------
 const getSingleChatFromDB = async (chatId: string, currentUserId: string) => {
   const chat = await Chat.findById(chatId)
@@ -474,6 +515,7 @@ export const ChatServices = {
   joinChatIntoDB,
   leaveChatFromDB,
   deleteChatFromDB,
+  sendGreetingsToUser,
   getSingleChatFromDB,
   getChatsByUserIdFromDB,
 };
