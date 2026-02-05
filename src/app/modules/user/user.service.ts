@@ -9,6 +9,7 @@ import { User } from './user.model';
 import { USER_ROLES, USER_STATUS } from './user.constant';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { calculateDistance } from '../../../util/calculateDistance';
+import { FriendshipServices } from '../friendship/friendship.service';
 
 const createUserToDB = async (payload: Partial<IUser>) => {
   //set role
@@ -124,6 +125,7 @@ const getUserProfileFromDB = async (userId: string) => {
 //get single user by id
 const getSingleUserFromDB = async (
   id: string,
+  currentUserId: string,
   query: Record<string, unknown>,
 ): Promise<Partial<IUser>> => {
   const result = await User.findById(id).lean();
@@ -132,7 +134,12 @@ const getSingleUserFromDB = async (
   }
 
   // calculate and attach distance from me
-  if (query.lat && query.lng && result.location.coordinates) {
+  if (
+    query.lat &&
+    query.lng &&
+    result.location.coordinates &&
+    result.isLocationVisible
+  ) {
     const lat = parseFloat(query.lat as string);
     const lng = parseFloat(query.lng as string);
     const distance = calculateDistance(
@@ -145,7 +152,15 @@ const getSingleUserFromDB = async (
     (result as any).distance = distance;
   }
 
-  return result;
+  const friendshipStatus = await FriendshipServices.checkFriendship(
+    currentUserId,
+    id,
+  );
+
+  return {
+    ...result,
+    ...friendshipStatus,
+  };
 };
 
 // get all users

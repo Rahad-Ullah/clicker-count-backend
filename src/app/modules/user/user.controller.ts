@@ -90,7 +90,8 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 const getUserById = catchAsync(async (req: Request, res: Response) => {
   const result = await UserService.getSingleUserFromDB(
     req.params.id,
-    req.query
+    req.user.id,
+    req.query,
   );
 
   sendResponse(res, {

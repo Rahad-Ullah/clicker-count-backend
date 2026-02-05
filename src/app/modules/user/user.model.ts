@@ -72,6 +72,10 @@ const userSchema = new Schema<IUser, UserModal>(
       enum: Object.values(USER_STATUS),
       default: USER_STATUS.ACTIVE,
     },
+    isLocationVisible: {
+      type: Boolean,
+      default: false,
+    },
     isOnline: {
       type: Boolean,
       default: false,
@@ -102,7 +106,7 @@ const userSchema = new Schema<IUser, UserModal>(
       select: 0,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Index for geospatial queries

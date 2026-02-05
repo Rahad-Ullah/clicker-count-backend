@@ -19,6 +19,7 @@ export interface IUser {
   };
   advertiser: Types.ObjectId;
   status: USER_STATUS;
+  isLocationVisible: boolean;
   isOnline: boolean;
   isVerified: boolean;
   isDeleted: boolean;
