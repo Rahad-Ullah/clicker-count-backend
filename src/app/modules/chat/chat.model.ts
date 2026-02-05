@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { IChat, ChatModel } from './chat.interface';
-import { CHAT_ACCESS_TYPE, CHAT_PRIVACY } from './chat.constant';
+import { CHAT_ACCESS_TYPE, CHAT_PRIVACY, REQUEST_STATUS } from './chat.constant';
 
 const chatSchema = new Schema<IChat, ChatModel>(
   {
@@ -31,6 +31,11 @@ const chatSchema = new Schema<IChat, ChatModel>(
       enum: Object.values(CHAT_ACCESS_TYPE),
       default: CHAT_ACCESS_TYPE.OPEN,
     },
+    requestStatus: {
+      type: String,
+      enum: Object.values(REQUEST_STATUS),
+      default: REQUEST_STATUS.PENDING,
+    },
     latestMessage: {
       type: Schema.Types.ObjectId,
       ref: 'Message',
@@ -43,7 +48,7 @@ const chatSchema = new Schema<IChat, ChatModel>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 chatSchema.index({ participants: 1, updatedAt: -1 });

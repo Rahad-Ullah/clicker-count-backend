@@ -8,7 +8,11 @@ import { User } from '../user/user.model';
 import { toObjectId } from '../../../util/toObjectId';
 import { USER_ROLES, USER_STATUS } from '../user/user.constant';
 import { Types } from 'mongoose';
-import { CHAT_ACCESS_TYPE, CHAT_PRIVACY } from './chat.constant';
+import {
+  CHAT_ACCESS_TYPE,
+  CHAT_PRIVACY,
+  REQUEST_STATUS,
+} from './chat.constant';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { JoinRequest } from '../joinRequest/joinRequest.model';
 import { JOIN_REQUEST_STATUS } from '../joinRequest/joinRequest.constants';
@@ -81,6 +85,7 @@ export const createGroupChatIntoDB = async (payload: IChat) => {
   const chatPayload = {
     ...payload,
     isGroupChat: true,
+    requestStatus: REQUEST_STATUS.ACCEPTED,
   };
   const result = await Chat.create(chatPayload);
   return result;

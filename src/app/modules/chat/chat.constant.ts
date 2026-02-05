@@ -7,3 +7,9 @@ export enum CHAT_ACCESS_TYPE {
   OPEN = 'open',
   RESTRICTED = 'restricted',
 }
+
+export enum REQUEST_STATUS {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+}

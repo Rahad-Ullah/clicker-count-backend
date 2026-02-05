@@ -1,5 +1,9 @@
 import { Model, Types } from 'mongoose';
-import { CHAT_ACCESS_TYPE, CHAT_PRIVACY } from './chat.constant';
+import {
+  CHAT_ACCESS_TYPE,
+  CHAT_PRIVACY,
+  REQUEST_STATUS,
+} from './chat.constant';
 
 export type IChat = {
   _id?: Types.ObjectId;
@@ -11,6 +15,7 @@ export type IChat = {
   isGroupChat: boolean;
   privacy: CHAT_PRIVACY;
   accessType: CHAT_ACCESS_TYPE;
+  requestStatus: REQUEST_STATUS;
   latestMessage: Types.ObjectId;
   isDeleted: boolean;
 };

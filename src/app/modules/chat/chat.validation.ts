@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { CHAT_ACCESS_TYPE, CHAT_PRIVACY } from './chat.constant';
+import {
+  CHAT_ACCESS_TYPE,
+  CHAT_PRIVACY,
+  REQUEST_STATUS,
+} from './chat.constant';
 import { objectId } from '../../../helpers/zodHelper';
 
 // create 1-to-1 chat validation
@@ -40,6 +44,9 @@ const updateChatValidation = z.object({
         .optional(),
       privacy: z.nativeEnum(CHAT_PRIVACY).optional(),
       accessType: z.nativeEnum(CHAT_ACCESS_TYPE).optional(),
+      requestStatus: z
+        .enum([REQUEST_STATUS.ACCEPTED, REQUEST_STATUS.REJECTED])
+        .optional(),
       image: z.any().optional(),
     })
     .strict(),
