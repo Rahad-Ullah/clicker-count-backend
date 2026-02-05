@@ -32,7 +32,9 @@ export const createAdvertisementIntoDB = async (payload: IAdvertisement) => {
     payload.advertiser = advertiser._id;
 
     // check plan
-    plan = await Plan.findById(payload.plan, null, { session }).select('price');
+    plan = await Plan.findById(payload.plan, null, { session }).select(
+      'price stripePriceId',
+    );
     if (!plan) {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Plan does not exist');
     }
