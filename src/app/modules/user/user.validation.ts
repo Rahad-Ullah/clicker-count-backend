@@ -33,9 +33,10 @@ const updateUserZodSchema = z.object({
         .array(z.number())
         .length(
           2,
-          'Location must be an array of 2 numbers [longitude, latitude]'
+          'Location must be an array of 2 numbers [longitude, latitude]',
         )
         .optional(),
+      isLocationVisible: z.boolean().optional(),
       image: z.string().optional(),
     })
     .strict(),
