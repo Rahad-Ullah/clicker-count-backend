@@ -30,6 +30,13 @@ router.patch(
   UserController.toggleUserStatus
 );
 
+// delete user account
+router.delete(
+  '/delete-account',
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  UserController.deleteUserAccount
+);
+
 // get profile
 router.get('/profile', auth(), UserController.getUserProfile);
 

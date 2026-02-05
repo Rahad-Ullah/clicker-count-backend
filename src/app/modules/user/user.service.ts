@@ -35,7 +35,7 @@ const createUserToDB = async (payload: Partial<IUser>) => {
   };
   await User.findOneAndUpdate(
     { _id: createUser._id },
-    { $set: { authentication } }
+    { $set: { authentication } },
   );
 
   return 'We have sent you an email with a one-time code to verify your account. Please check your email.';
@@ -43,7 +43,7 @@ const createUserToDB = async (payload: Partial<IUser>) => {
 
 const updateProfileToDB = async (
   id: string,
-  payload: Partial<IUser>
+  payload: Partial<IUser>,
 ): Promise<Partial<IUser | null>> => {
   const isExistUser = await User.isExistUserById(id);
   if (!isExistUser) {
@@ -81,7 +81,26 @@ const toggleUserStatus = async (id: string) => {
         },
       },
     ],
-    { new: true }
+    { new: true },
+  );
+  return result;
+};
+
+// delete user account by id
+const deleteAccountFromDB = async (id: string) => {
+  const isExistUser = await User.exists({ _id: id });
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const result = await User.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        isDeleted: true,
+      },
+    },
+    { new: true },
   );
   return result;
 };
@@ -95,7 +114,7 @@ const getUserProfileFromDB = async (userId: string) => {
   if (isExistUser.status !== USER_STATUS.ACTIVE) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'Your account is inactive or disabled.'
+      'Your account is inactive or disabled.',
     );
   }
 
@@ -105,7 +124,7 @@ const getUserProfileFromDB = async (userId: string) => {
 //get single user by id
 const getSingleUserFromDB = async (
   id: string,
-  query: Record<string, unknown>
+  query: Record<string, unknown>,
 ): Promise<Partial<IUser>> => {
   const result = await User.findById(id).lean();
   if (!result) {
@@ -120,7 +139,7 @@ const getSingleUserFromDB = async (
       lat,
       lng,
       result.location.coordinates[1],
-      result.location.coordinates[0]
+      result.location.coordinates[0],
     );
 
     (result as any).distance = distance;
@@ -155,7 +174,7 @@ const getAllUsersFromDB = async (query: Record<string, unknown>) => {
 
   const userQuery = new QueryBuilder(
     User.find(filter).populate('advertiser').lean(),
-    query
+    query,
   )
     .search(['name', 'email'])
     .filter(['location', 'lat', 'lng', 'radius'])
@@ -178,7 +197,7 @@ const getAllUsersFromDB = async (query: Record<string, unknown>) => {
           lat,
           lng,
           user.location.coordinates[1],
-          user.location.coordinates[0]
+          user.location.coordinates[0],
         );
       }
     });
@@ -191,6 +210,7 @@ export const UserService = {
   createUserToDB,
   updateProfileToDB,
   toggleUserStatus,
+  deleteAccountFromDB,
   getUserProfileFromDB,
   getSingleUserFromDB,
   getAllUsersFromDB,
