@@ -69,7 +69,11 @@ const getSinglePostById = catchAsync(async (req: Request, res: Response) => {
 
 // ------------- get posts by user id -------------
 const getPostsByUserId = catchAsync(async (req: Request, res: Response) => {
-  const result = await PostServices.getPostsByUserId(req.params.id, req.query);
+  const result = await PostServices.getPostsByUserId(
+    req.params.id,
+    req.user?.id,
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -82,7 +86,7 @@ const getPostsByUserId = catchAsync(async (req: Request, res: Response) => {
 
 // ------------ get my posts ------------
 const getMyPosts = catchAsync(async (req: Request, res: Response) => {
-  const result = await PostServices.getPostsByUserId(req.user?.id, req.query);
+  const result = await PostServices.getMyPosts(req.user?.id, req.query);
 
   sendResponse(res, {
     success: true,

@@ -5,6 +5,8 @@ import { IPost } from './post.interface';
 import { Post } from './post.model';
 import unlinkFile from '../../../shared/unlinkFile';
 import QueryBuilder from '../../builder/QueryBuilder';
+import { FriendshipServices } from '../friendship/friendship.service';
+import { POST_PRIVACY } from './post.constants';
 
 // -------------- create post --------------
 const createPostToDB = async (payload: IPost): Promise<IPost> => {
@@ -28,7 +30,7 @@ const createPostToDB = async (payload: IPost): Promise<IPost> => {
 // -------------- update post --------------
 const updatePostToDB = async (
   id: string,
-  payload: Partial<IPost> & { newImages?: string[]; removedImages?: string[] }
+  payload: Partial<IPost> & { newImages?: string[]; removedImages?: string[] },
 ): Promise<IPost> => {
   // check if post exists
   const existingPost = await Post.findById(id).lean();
@@ -41,11 +43,11 @@ const updatePostToDB = async (
   // remove old photos and unlink
   if (payload?.removedImages && payload.removedImages.length > 0) {
     const deletedPhotos = existingPost.photos.filter(photo =>
-      payload.removedImages?.includes(photo)
+      payload.removedImages?.includes(photo),
     );
     deletedPhotos.forEach(photo => unlinkFile(photo));
     payload.photos = existingPost.photos.filter(
-      photo => !payload.removedImages?.includes(photo)
+      photo => !payload.removedImages?.includes(photo),
     );
   }
 
@@ -69,10 +71,17 @@ const deletePostFromDB = async (id: string, user: string): Promise<IPost> => {
 
   // check if user is owner
   if (existingPost.user.toString() !== user) {
-    throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized to perform this action');
+    throw new ApiError(
+      StatusCodes.UNAUTHORIZED,
+      'You are not authorized to perform this action',
+    );
   }
-  
-  const result = await Post.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+
+  const result = await Post.findByIdAndUpdate(
+    id,
+    { isDeleted: true },
+    { new: true },
+  );
   return result!;
 };
 
@@ -87,14 +96,49 @@ const getSinglePostFromDB = async (id: string): Promise<IPost> => {
 // -------------- get by user id --------------
 const getPostsByUserId = async (
   userId: string,
-  query: Record<string, unknown>
+  currentUserId: string,
+  query: Record<string, unknown>,
 ) => {
+  const filter = {
+    user: userId,
+    isDeleted: false,
+  } as any;
+  // check friendship status
+  const { isAlreadyFriend } = await FriendshipServices.checkFriendship(
+    currentUserId,
+    userId,
+  );
+
+  if (isAlreadyFriend) {
+    filter.privacy = { $ne: POST_PRIVACY.ONLY_ME };
+  } else {
+    filter.privacy = POST_PRIVACY.PUBLIC;
+  }
+
+  const postQuery = new QueryBuilder(
+    Post.find(filter).populate('user', 'name email image'),
+    query,
+  )
+    .filter()
+    .paginate()
+    .sort()
+    .fields();
+
+  const [posts, pagination] = await Promise.all([
+    postQuery.modelQuery.lean(),
+    postQuery.getPaginationInfo(),
+  ]);
+  return { posts, pagination };
+};
+
+// -------------- get by user id --------------
+const getMyPosts = async (userId: string, query: Record<string, unknown>) => {
   const postQuery = new QueryBuilder(
     Post.find({ user: userId, isDeleted: false }).populate(
       'user',
-      'name email image'
+      'name email image',
     ),
-    query
+    query,
   )
     .filter()
     .paginate()
@@ -140,7 +184,7 @@ const getAllPostsFromDB = async (query: Record<string, unknown>) => {
 
   const postQuery = new QueryBuilder(
     Post.find(filter).populate('user', 'name email image').lean(),
-    query
+    query,
   )
     .search(['address'])
     .filter(['location', 'lat', 'lng', 'radius', 'startDate', 'endDate'])
@@ -162,5 +206,6 @@ export const PostServices = {
   deletePostFromDB,
   getSinglePostFromDB,
   getPostsByUserId,
+  getMyPosts,
   getAllPostsFromDB,
 };
