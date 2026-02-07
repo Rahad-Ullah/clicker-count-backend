@@ -173,6 +173,15 @@ const getAdvertisementsByUserId = async (
   return { data, pagination };
 };
 
+// ----------------- get single advertisement by id -----------------
+const getAdvertisementById = async (id: string) => {
+  const result = await Advertisement.findById(id);
+  if (!result) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Advertisement not found');
+  }
+  return result;
+};
+
 // ----------------- get all advertisements -----------------
 const getAllAdvertisements = async (query: Record<string, unknown>) => {
   const adQuery = new QueryBuilder(Advertisement.find({}).populate('user', 'name email image'), query)
@@ -275,6 +284,7 @@ export const AdvertisementServices = {
   updateAdvertisementStatus,
   deleteAdvertisementFromDB,
   getAdvertisementsByUserId,
+  getAdvertisementById,
   getAllAdvertisements,
   getActiveAdvertisements,
   getAdvertiserOverview,

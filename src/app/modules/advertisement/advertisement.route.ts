@@ -49,6 +49,13 @@ router.get(
   AdvertisementController.getMyAdvertisements,
 );
 
+// get single advertisement
+router.get(
+  '/single/:id',
+  auth(),
+  AdvertisementController.getSingleAdvertisementById,
+);
+
 // get all advertisements
 router.get(
   '/all',

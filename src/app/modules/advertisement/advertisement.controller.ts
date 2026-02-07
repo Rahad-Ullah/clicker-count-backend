@@ -111,6 +111,18 @@ const getMyAdvertisements = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get single advertisement by id
+const getSingleAdvertisementById = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdvertisementServices.getAdvertisementById(req.params.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Single advertisement fetched successfully',
+    data: result,
+  });
+});
+
 // get all advertisements
 const getAllAdvertisements = catchAsync(async (req: Request, res: Response) => {
   const result = await AdvertisementServices.getAllAdvertisements(req.query);
@@ -156,6 +168,7 @@ export const AdvertisementController = {
   updateAdvertisementStatus,
   deleteAdvertisement,
   getMyAdvertisements,
+  getSingleAdvertisementById,
   getAllAdvertisements,
   getNearbyActiveAds,
   getMyAdvertisementOverview,
