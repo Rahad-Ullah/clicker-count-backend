@@ -40,6 +40,9 @@ export const createAdvertisementIntoDB = async (payload: IAdvertisement) => {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'Plan does not exist');
     }
     payload.price = plan.price;
+    payload.startAt = new Date(
+      new Date(payload.startAt).setUTCHours(0, 0, 0, 0),
+    );
     payload.endAt = calculateExpireDate(
       plan.name,
       1,
@@ -133,7 +136,7 @@ const updateAdvertisementStatus = async (
     { new: true },
   );
   return result;
-}
+};
 
 // ----------------- delete advertisement -----------------
 const deleteAdvertisementFromDB = async (id: string) => {
@@ -184,7 +187,10 @@ const getAdvertisementById = async (id: string) => {
 
 // ----------------- get all advertisements -----------------
 const getAllAdvertisements = async (query: Record<string, unknown>) => {
-  const adQuery = new QueryBuilder(Advertisement.find({}).populate('user', 'name email image'), query)
+  const adQuery = new QueryBuilder(
+    Advertisement.find({}).populate('user', 'name email image'),
+    query,
+  )
     .search(['title', 'description'])
     .filter()
     .paginate()
@@ -197,7 +203,7 @@ const getAllAdvertisements = async (query: Record<string, unknown>) => {
   ]);
 
   return { data, pagination };
-}
+};
 
 // ----------------- get active advertisement -----------------
 const getActiveAdvertisements = async (userId: string) => {
@@ -270,14 +276,16 @@ export const getAdvertiserOverview = async (userId: string) => {
   ]);
 
   // Return default values if no ads found
-  return overview[0] || {
-    totalActiveAds: 0,
-    totalReachCount: 0,
-    totalClickCount: 0,
-    engagementRate: 0,
-  };
+  return (
+    overview[0] || {
+      totalActiveAds: 0,
+      totalReachCount: 0,
+      totalClickCount: 0,
+      engagementRate: 0,
+    }
+  );
 };
- 
+
 export const AdvertisementServices = {
   createAdvertisementIntoDB,
   updateAdvertisementIntoDB,
