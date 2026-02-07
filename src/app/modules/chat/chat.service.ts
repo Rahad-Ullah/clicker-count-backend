@@ -61,6 +61,7 @@ export const create1To1ChatIntoDB = async (payload: {
     ...payload,
     participants,
     isGroupChat: false,
+    accessType: CHAT_ACCESS_TYPE.RESTRICTED,
   };
 
   const result = await Chat.create(chatPayload);
@@ -417,7 +418,11 @@ const getChatsByUserIdFromDB = async (
   query: Record<string, unknown>,
 ) => {
   const searchTerm = (query.searchTerm as string)?.trim();
-  const filter: any = { isDeleted: false, participants: user.id };
+  const filter: any = {
+    isDeleted: false,
+    requestStatus: { $ne: REQUEST_STATUS.REJECTED },
+    participants: user.id,
+  };
 
   if (searchTerm && query.isGroupChat === 'true') {
     delete filter.participants;
@@ -487,7 +492,9 @@ const getChatsByUserIdFromDB = async (
     const unreadCount = unreadMap.get(chat._id.toString()) || 0;
 
     if (!chat.isGroupChat) {
-      const anotherParticipant = chat.participants[0];
+      const anotherParticipant = chat.participants.find(
+        (p: any) => p._id.toString() !== user.id,
+      );
       const { participants, ...rest } = chat;
 
       return {
