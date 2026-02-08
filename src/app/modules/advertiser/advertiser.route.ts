@@ -27,7 +27,7 @@ router.post(
 // update advertiser
 router.patch(
   '/update/me',
-  auth(USER_ROLES.USER),
+  auth(USER_ROLES.ADVERTISER),
   fileUploadHandler(),
   validateRequest(AdvertiserValidations.updateAdvertiserValidation),
   AdvertiserController.updateAdvertiserByUserId,
@@ -43,7 +43,7 @@ router.get(
 // get my advertiser profile
 router.get(
   '/me',
-  auth(USER_ROLES.USER),
+  auth(USER_ROLES.ADVERTISER),
   AdvertiserController.getMyAdvertiserProfile,
 );
 

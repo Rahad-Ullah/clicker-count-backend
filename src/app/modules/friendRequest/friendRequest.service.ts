@@ -45,7 +45,18 @@ const createFriendRequest = async (
     );
   }
 
-  const result = await FriendRequest.create(payload);
+  const result = await FriendRequest.findOneAndUpdate(
+    {
+      sender: payload.sender,
+      receiver: payload.receiver,
+    },
+    {
+      sender: payload.sender,
+      receiver: payload.receiver,
+      status: FRIEND_REQUEST_STATUS.PENDING,
+    },
+    { upsert: true, new: true },
+  );
   return result;
 };
 
