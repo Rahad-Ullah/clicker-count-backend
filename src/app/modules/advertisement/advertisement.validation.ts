@@ -96,10 +96,20 @@ const getNearbyActiveAds = z.object({
     .strict(),
 });
 
+// track ad click
+const trackAdClick = z.object({
+  params: z
+    .object({
+      id: objectId('Invalid advertisement ID'),
+    })
+    .strict(),
+});
+
 export const AdvertisementValidations = {
   createAdvertisementValidation,
   updateAdvertisementValidation,
   updateAdvertisementStatusValidation,
   deleteAdvertisementValidation,
   getNearbyActiveAds,
+  trackAdClick,
 };

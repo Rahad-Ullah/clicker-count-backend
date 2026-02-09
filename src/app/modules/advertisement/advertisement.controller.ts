@@ -101,7 +101,10 @@ const deleteAdvertisement = catchAsync(async (req: Request, res: Response) => {
 
 // get my advertisements
 const getMyAdvertisements = catchAsync(async (req: Request, res: Response) => {
-  const result = await AdvertisementServices.getAdvertisementsByUserId(req.user.id, req.query);
+  const result = await AdvertisementServices.getAdvertisementsByUserId(
+    req.user.id,
+    req.query,
+  );
 
   sendResponse(res, {
     success: true,
@@ -113,16 +116,20 @@ const getMyAdvertisements = catchAsync(async (req: Request, res: Response) => {
 });
 
 // get single advertisement by id
-const getSingleAdvertisementById = catchAsync(async (req: Request, res: Response) => {
-  const result = await AdvertisementServices.getAdvertisementById(req.params.id);
+const getSingleAdvertisementById = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await AdvertisementServices.getAdvertisementById(
+      req.params.id,
+    );
 
-  sendResponse(res, {
-    success: true,
-    statusCode: StatusCodes.OK,
-    message: 'Single advertisement fetched successfully',
-    data: result,
-  });
-});
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Single advertisement fetched successfully',
+      data: result,
+    });
+  },
+);
 
 // get all advertisements
 const getAllAdvertisements = catchAsync(async (req: Request, res: Response) => {
@@ -162,10 +169,24 @@ const getNearbyActiveAds = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// track ad click
+const trackAdClick = catchAsync(async (req: Request, res: Response) => {
+  console.log(req.params.id);
+  await redis.incr(`advertisement:clicks:${req.params.id}`);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Ad click tracked'
+  });
+});
+
 // get my advertisement overview
 const getMyAdvertisementOverview = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await AdvertisementServices.getAdvertiserOverview(req.user.id);
+    const result = await AdvertisementServices.getAdvertiserOverview(
+      req.user.id,
+    );
 
     sendResponse(res, {
       success: true,
@@ -185,5 +206,6 @@ export const AdvertisementController = {
   getSingleAdvertisementById,
   getAllAdvertisements,
   getNearbyActiveAds,
+  trackAdClick,
   getMyAdvertisementOverview,
 };

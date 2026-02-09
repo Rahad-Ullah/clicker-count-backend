@@ -66,6 +66,13 @@ router.get(
   AdvertisementController.getNearbyActiveAds,
 );
 
+// track ad click
+router.post(
+  '/track-click/:id',
+  validateRequest(AdvertisementValidations.trackAdClick),
+  AdvertisementController.trackAdClick,
+);
+
 // get my advertisement overview
 router.get(
   '/overview/me',
