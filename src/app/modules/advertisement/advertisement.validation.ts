@@ -81,11 +81,9 @@ const deleteAdvertisementValidation = z.object({
 
 // get active advertisements
 const getNearbyActiveAds = z.object({
-  params: z.object({
-    deviceId: objectId('Invalid device ID'),
-  }).strict(),
   query: z
     .object({
+      deviceId: z.string().nonempty('Device ID is required'),
       lng: z
         .string()
         .min(-180, 'Longitude must be between -180 and 180')

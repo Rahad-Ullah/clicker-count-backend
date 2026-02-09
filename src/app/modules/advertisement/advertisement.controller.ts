@@ -141,7 +141,7 @@ const getAllAdvertisements = catchAsync(async (req: Request, res: Response) => {
 const getNearbyActiveAds = catchAsync(async (req: Request, res: Response) => {
   const result = await AdvertisementServices.getActiveAdvertisements(req.query);
   // Use device id as the unique identifier for public reach
-  const deviceId = req.params.deviceId;
+  const deviceId = req.query.deviceId as string;
 
   // Track reach count
   if (result.length > 0) {
@@ -149,7 +149,7 @@ const getNearbyActiveAds = catchAsync(async (req: Request, res: Response) => {
     for (const ad of result) {
       const key = `advertisement:reach:${ad._id}`;
       pipeline.sadd(key, deviceId);
-      pipeline.expire(key, 86400); // ttl: 1 day
+      pipeline.expire(key, 60 * 60 * 24 * 30); // ttl: 30 day
     }
     await pipeline.exec();
   }
