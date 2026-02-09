@@ -11,7 +11,7 @@ const router = express.Router();
 // create support
 router.post(
   '/create',
-  auth(USER_ROLES.USER),
+  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
   fileUploadHandler(),
   validateRequest(SupportValidations.createSupportSchema),
   SupportController.createSupport,

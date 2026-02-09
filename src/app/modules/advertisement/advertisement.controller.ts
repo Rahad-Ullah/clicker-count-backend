@@ -5,6 +5,7 @@ import sendResponse from '../../../shared/sendResponse';
 import { StatusCodes } from 'http-status-codes';
 import { getSingleFilePath } from '../../../shared/getFilePath';
 import ApiError from '../../../errors/ApiError';
+import { redis } from '../../../config/redis';
 
 // create advertisement
 const createAdvertisement = catchAsync(async (req: Request, res: Response) => {
@@ -138,7 +139,20 @@ const getAllAdvertisements = catchAsync(async (req: Request, res: Response) => {
 
 // get nearby active ads
 const getNearbyActiveAds = catchAsync(async (req: Request, res: Response) => {
-  const result = await AdvertisementServices.getActiveAdvertisements(req.user.id);
+  const result = await AdvertisementServices.getActiveAdvertisements(
+    req.user.id,
+  );
+
+  // Track reach count
+  if (result.length > 0) {
+    const pipeline = redis.pipeline();
+    for (const ad of result) {
+      const key = `advertisement:reach:${ad.id}`;
+      pipeline.sadd(key, req.user.id);
+      pipeline.expire(key, 86400); // ttl: 1 day
+    }
+    await pipeline.exec();
+  }
 
   sendResponse(res, {
     success: true,

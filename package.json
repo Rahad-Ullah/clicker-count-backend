@@ -60,6 +60,7 @@
     "googleapis": "^169.0.0",
     "http-status-codes": "^2.3.0",
     "i": "^0.3.7",
+    "ioredis": "^5.9.2",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
     "mongoose": "^8.4.4",
