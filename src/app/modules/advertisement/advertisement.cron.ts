@@ -68,7 +68,6 @@ export const advertisementReachAndClickCountCron = () => {
 
         const reachCount = await redis.scard(reachKey);
         const clickCount = Number(await redis.get(clickKey)) || 0;
-        console.log(reachCount, clickCount);
 
         await Advertisement.findByIdAndUpdate(ad._id, {
           $inc: {
