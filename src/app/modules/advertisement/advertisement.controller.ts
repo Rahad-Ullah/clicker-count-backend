@@ -171,8 +171,9 @@ const getNearbyActiveAds = catchAsync(async (req: Request, res: Response) => {
 
 // track ad click
 const trackAdClick = catchAsync(async (req: Request, res: Response) => {
-  console.log(req.params.id);
-  await redis.incr(`advertisement:clicks:${req.params.id}`);
+  const key = `advertisement:clicks:${req.params.id}`;
+  await redis.incr(key);
+  await redis.expire(key, 60 * 60 * 24); // ttl: 24 hours
 
   sendResponse(res, {
     success: true,

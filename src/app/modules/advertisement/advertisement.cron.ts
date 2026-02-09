@@ -5,6 +5,7 @@ import {
   PAYMENT_STATUS,
   APPROVAL_STATUS,
 } from './advertisement.constants';
+import { redis } from '../../../config/redis';
 
 export const advertisementStatusCron = () => {
   // Runs every 5 minute
@@ -46,6 +47,48 @@ export const advertisementStatusCron = () => {
       }
     } catch (error) {
       console.error('[CRON] Advertisement status update failed:', error);
+    }
+  });
+};
+
+// track reach count and click count
+export const advertisementReachAndClickCountCron = () => {
+  // Runs every 5 minute
+  cron.schedule('*/5 * * * *', async () => {
+    console.log('[CRON] Advertisement reach and click count update started...');
+    try {
+      const ads = await Advertisement.find({
+        status: AD_STATUS.Active,
+        endAt: { $gt: new Date(Date.now() + 5 * 60 * 1000) }, // 5 minutes from now
+      });
+
+      for (const ad of ads) {
+        const reachKey = `advertisement:reach:${ad._id}`;
+        const clickKey = `advertisement:clicks:${ad._id}`;
+
+        const reachCount = await redis.scard(reachKey);
+        const clickCount = Number(await redis.get(clickKey)) || 0;
+        console.log(reachCount, clickCount);
+
+        await Advertisement.findByIdAndUpdate(ad._id, {
+          $inc: {
+            reachCount,
+            clickCount,
+          },
+        });
+
+        // Optional cleanup
+        await redis.del(clickKey);
+        // await redis.del(reachKey);
+      }
+      console.log(
+        '[CRON] Advertisement reach and click count update completed',
+      );
+    } catch (error) {
+      console.error(
+        '[CRON] Advertisement reach and click count update failed:',
+        error,
+      );
     }
   });
 };
