@@ -139,16 +139,16 @@ const getAllAdvertisements = catchAsync(async (req: Request, res: Response) => {
 
 // get nearby active ads
 const getNearbyActiveAds = catchAsync(async (req: Request, res: Response) => {
-  const result = await AdvertisementServices.getActiveAdvertisements(
-    req.user.id,
-  );
+  const result = await AdvertisementServices.getActiveAdvertisements(req.query);
+  // Use device id as the unique identifier for public reach
+  const deviceId = req.params.deviceId;
 
   // Track reach count
   if (result.length > 0) {
     const pipeline = redis.pipeline();
     for (const ad of result) {
-      const key = `advertisement:reach:${ad.id}`;
-      pipeline.sadd(key, req.user.id);
+      const key = `advertisement:reach:${ad._id}`;
+      pipeline.sadd(key, deviceId);
       pipeline.expire(key, 86400); // ttl: 1 day
     }
     await pipeline.exec();

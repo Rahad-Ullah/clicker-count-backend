@@ -57,16 +57,12 @@ router.get(
 );
 
 // get all advertisements
-router.get(
-  '/all',
-  auth(),
-  AdvertisementController.getAllAdvertisements,
-);
+router.get('/all', auth(), AdvertisementController.getAllAdvertisements);
 
 // get nearby active ads
 router.get(
   '/nearby-active',
-  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  validateRequest(AdvertisementValidations.getNearbyActiveAds),
   AdvertisementController.getNearbyActiveAds,
 );
 

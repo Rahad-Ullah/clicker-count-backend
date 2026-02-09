@@ -62,7 +62,10 @@ const updateAdvertisementStatusValidation = z.object({
     .strict(),
   body: z
     .object({
-      approvalStatus: z.enum([APPROVAL_STATUS.Approved, APPROVAL_STATUS.Rejected]),
+      approvalStatus: z.enum([
+        APPROVAL_STATUS.Approved,
+        APPROVAL_STATUS.Rejected,
+      ]),
     })
     .strict(),
 });
@@ -76,9 +79,29 @@ const deleteAdvertisementValidation = z.object({
     .strict(),
 });
 
+// get active advertisements
+const getNearbyActiveAds = z.object({
+  params: z.object({
+    deviceId: objectId('Invalid device ID'),
+  }).strict(),
+  query: z
+    .object({
+      lng: z
+        .string()
+        .min(-180, 'Longitude must be between -180 and 180')
+        .max(180, 'Longitude must be between -180 and 180'),
+      lat: z
+        .string()
+        .min(-90, 'Latitude must be between -90 and 90')
+        .max(90, 'Latitude must be between -90 and 90'),
+    })
+    .strict(),
+});
+
 export const AdvertisementValidations = {
   createAdvertisementValidation,
   updateAdvertisementValidation,
   updateAdvertisementStatusValidation,
   deleteAdvertisementValidation,
+  getNearbyActiveAds,
 };

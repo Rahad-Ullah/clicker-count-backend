@@ -206,12 +206,9 @@ const getAllAdvertisements = async (query: Record<string, unknown>) => {
 };
 
 // ----------------- get active advertisement -----------------
-const getActiveAdvertisements = async (userId: string) => {
-  const user = await User.findById(userId).select('location');
-  if (!user || !user.location) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'User location not found');
-  }
-
+const getActiveAdvertisements = async (query: Record<string, unknown>) => {
+  const lng = parseFloat(query.lng as string);
+  const lat = parseFloat(query.lat as string);
   const setting = await Setting.findOne().select('nearbyRange');
 
   const nearbyAds = await Advertisement.find({
@@ -219,7 +216,7 @@ const getActiveAdvertisements = async (userId: string) => {
       $near: {
         $geometry: {
           type: 'Point',
-          coordinates: user.location.coordinates, // [lng, lat]
+          coordinates: [lng, lat], // [lng, lat]
         },
         $maxDistance: (setting?.nearbyRange || 50) * 1000, // meters
       },
