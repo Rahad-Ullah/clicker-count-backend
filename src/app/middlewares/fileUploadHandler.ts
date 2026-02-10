@@ -105,7 +105,7 @@ const fileUploadHandler = (): RequestHandler => {
     storage: storage,
     fileFilter: fileFilter as any,
   }).fields([
-    { name: 'image', maxCount: 1 },
+    { name: 'image', maxCount: 5 },
     { name: 'media', maxCount: 1 },
     { name: 'doc', maxCount: 1 },
     { name: 'data', maxCount: 1 },
