@@ -235,7 +235,7 @@ export const getAdvertiserOverview = async (userId: string) => {
     // 1️. Filter by user and non-deleted ads
     {
       $match: {
-        advertiser: new mongoose.Types.ObjectId(userId),
+        user: new mongoose.Types.ObjectId(userId),
         isDeleted: false,
         status: AD_STATUS.Active, // Only active ads for totalActiveAds
       },
@@ -273,14 +273,12 @@ export const getAdvertiserOverview = async (userId: string) => {
   ]);
 
   // Return default values if no ads found
-  return (
-    overview[0] || {
-      totalActiveAds: 0,
-      totalReachCount: 0,
-      totalClickCount: 0,
-      engagementRate: 0,
-    }
-  );
+  return {
+    totalActiveAds: overview[0]?.totalActiveAds || 0,
+    totalReachCount: overview[0]?.totalReachCount || 0,
+    totalClickCount: overview[0]?.totalClickCount || 0,
+    engagementRate: +(overview[0]?.engagementRate || 0).toFixed(2) || 0, // fix precision 2 digits
+  };
 };
 
 export const AdvertisementServices = {
