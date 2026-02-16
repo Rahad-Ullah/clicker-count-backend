@@ -180,7 +180,10 @@ const getSingleUserFromDB = async (
 };
 
 // get all users
-const getAllUsersFromDB = async (query: Record<string, unknown>) => {
+const getAllUsersFromDB = async (
+  query: Record<string, unknown>,
+  currentUserId: string,
+) => {
   const filter: Record<string, any> = {
     isDeleted: false,
     role: { $ne: USER_ROLES.SUPER_ADMIN },
@@ -201,6 +204,8 @@ const getAllUsersFromDB = async (query: Record<string, unknown>) => {
         },
       };
     }
+    // skip self
+    filter._id = { $ne: currentUserId };
   }
 
   const userQuery = new QueryBuilder(

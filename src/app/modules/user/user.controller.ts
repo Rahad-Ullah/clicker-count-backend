@@ -104,7 +104,7 @@ const getUserById = catchAsync(async (req: Request, res: Response) => {
 
 // get all users
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  const result = await UserService.getAllUsersFromDB(req.query);
+  const result = await UserService.getAllUsersFromDB(req.query, req.user.id);
 
   sendResponse(res, {
     success: true,
