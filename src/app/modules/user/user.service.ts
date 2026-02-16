@@ -14,17 +14,33 @@ import { FriendshipServices } from '../friendship/friendship.service';
 const createUserToDB = async (payload: Partial<IUser>) => {
   //set role
   payload.role = USER_ROLES.USER;
-  const createUser = await User.create(payload);
-  if (!createUser) {
+
+  let createdUser;
+  // check if user already exists and verified
+  const existingUser = await User.findOne({ email: payload.email });
+  if (existingUser) {
+    if (existingUser.isVerified) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already registered');
+    } else {
+      // Update existing user with new payload
+      Object.assign(existingUser, payload);
+      createdUser = await existingUser.save();
+    }
+  } else {
+    // create new user
+    createdUser = await User.create(payload);
+  }
+  // if user not created, throw error
+  if (!createdUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');
   }
 
   //send email
   const otp = generateOTP(6);
   const values = {
-    name: createUser.name,
+    name: createdUser.name,
     otp: otp,
-    email: createUser.email!,
+    email: createdUser.email!,
   };
   const createAccountTemplate = emailTemplate.createAccount(values);
   emailHelper.sendEmail(createAccountTemplate);
@@ -35,7 +51,7 @@ const createUserToDB = async (payload: Partial<IUser>) => {
     expireAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes expiration
   };
   await User.findOneAndUpdate(
-    { _id: createUser._id },
+    { _id: createdUser._id },
     { $set: { authentication } },
   );
 
