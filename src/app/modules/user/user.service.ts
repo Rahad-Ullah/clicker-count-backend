@@ -10,6 +10,7 @@ import { USER_ROLES, USER_STATUS } from './user.constant';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { calculateDistance } from '../../../util/calculateDistance';
 import { FriendshipServices } from '../friendship/friendship.service';
+import { Setting } from '../setting/setting.model';
 
 const createUserToDB = async (payload: Partial<IUser>) => {
   //set role
@@ -192,7 +193,10 @@ const getAllUsersFromDB = async (
   if (query.lat && query.lng) {
     const lat = parseFloat(query.lat as string);
     const lng = parseFloat(query.lng as string);
-    const radiusKm = parseFloat((query.radius as string) || '5'); // radius in kilometers, default to 5km
+    const defaultSetting = await Setting.findOne().select('nearbyRange');
+    const radiusKm = parseFloat(
+      (query.radius || defaultSetting?.nearbyRange || 10).toString(),
+    );
 
     if (!isNaN(lat) && !isNaN(lng) && !isNaN(radiusKm) && radiusKm > 0) {
       const EARTH_RADIUS_KM = 6378.1;
