@@ -435,7 +435,7 @@ const getChatsByUserIdFromDB = async (
     Chat.find(filter)
       .populate({
         path: 'participants',
-        select: 'name image',
+        select: 'name image isOnline',
         match: {
           // _id: { $ne: user.id },
           ...(searchTerm &&
