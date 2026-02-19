@@ -446,6 +446,7 @@ const getChatsByUserIdFromDB = async (
       })
       .populate({
         path: 'latestMessage',
+        select: 'sender type content isDeleted',
         populate: {
           path: 'sender',
           select: 'name image',

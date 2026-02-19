@@ -42,7 +42,7 @@ export const createMessage = async (payload: IMessage): Promise<IMessage> => {
   }
 
   // update the chat to sort it to the top
-  await Chat.findByIdAndUpdate(payload.chat, {});
+  await Chat.findByIdAndUpdate(payload.chat, { latestMessage: result._id });
 
   return result;
 };
