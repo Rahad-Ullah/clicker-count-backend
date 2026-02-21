@@ -12,10 +12,10 @@ const createAdvertisement = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
   payload.user = req.user.id;
   const imagePath = getSingleFilePath(req.files, 'image');
-  if (!imagePath) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Image is required');
-  }
-  payload.image = imagePath;
+  // if (!imagePath) {
+  //   throw new ApiError(StatusCodes.BAD_REQUEST, 'Image is required');
+  // }
+  payload.image = imagePath || '';
   if (payload.longitude && payload.latitude) {
     const lng = parseFloat(payload.longitude);
     const lat = parseFloat(payload.latitude);

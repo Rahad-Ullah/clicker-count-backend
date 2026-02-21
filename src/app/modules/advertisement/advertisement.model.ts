@@ -36,7 +36,7 @@ const advertisementSchema = new Schema<IAdvertisement, AdvertisementModel>(
     },
     title: { type: String, required: true },
     description: { type: String, required: true },
-    image: { type: String, required: true },
+    image: { type: String, default: '' },
     focusArea: { type: String, required: true },
     focusAreaLocation: { type: LocationSchema, required: true },
     websiteUrl: { type: String, required: true },
