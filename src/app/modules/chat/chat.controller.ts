@@ -186,6 +186,21 @@ const getMyChats = catchAsync(
   },
 );
 
+// get all group chats
+const getAllGroupChats = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await ChatServices.getAllGroupChatsFromDB(req.query);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Group chats retrieved successfully',
+      data: result.data,
+      pagination: result.pagination,
+    });
+  },
+);
+
 export const ChatController = {
   create1To1Chat,
   createGroupChat,
@@ -199,4 +214,5 @@ export const ChatController = {
   sendGreetingsToUser,
   getSingleChat,
   getMyChats,
+  getAllGroupChats,
 };

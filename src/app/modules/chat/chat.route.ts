@@ -88,4 +88,11 @@ router.get('/single/:id', auth(), ChatController.getSingleChat);
 // get my chats
 router.get('/my-chats', auth(), ChatController.getMyChats);
 
+// get all group chats
+router.get(
+  '/group-chats',
+  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  ChatController.getAllGroupChats,
+);
+
 export const ChatRoutes = router;

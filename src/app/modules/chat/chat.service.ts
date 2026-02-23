@@ -535,6 +535,31 @@ const getChatsByUserIdFromDB = async (
   };
 };
 
+// ---------------- get all group chats ----------------
+const getAllGroupChatsFromDB = async (query: Record<string, unknown>) => {
+  const chatQuery = new QueryBuilder(
+    Chat.find({
+      isDeleted: false,
+      isGroupChat: true,
+    }),
+    query,
+  )
+    .filter()
+    .sort()
+    .fields()
+    .paginate();
+
+  const [data, pagination] = await Promise.all([
+    chatQuery.modelQuery.lean(),
+    chatQuery.getPaginationInfo(),
+  ]);
+
+  return {
+    data,
+    pagination,
+  };
+};
+
 export const ChatServices = {
   create1To1ChatIntoDB,
   createGroupChatIntoDB,
@@ -548,4 +573,5 @@ export const ChatServices = {
   sendGreetingsToUser,
   getSingleChatFromDB,
   getChatsByUserIdFromDB,
+  getAllGroupChatsFromDB,
 };
