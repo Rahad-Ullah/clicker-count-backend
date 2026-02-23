@@ -6,6 +6,7 @@ export enum POST_PRIVACY {
 }
 
 export enum POST_STATUS {
+  PENDING = 'pending',
   ACTIVE = 'active',
   INACTIVE = 'inactive',
 }

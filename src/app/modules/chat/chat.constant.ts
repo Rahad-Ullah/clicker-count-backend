@@ -13,3 +13,8 @@ export enum REQUEST_STATUS {
   ACCEPTED = 'accepted',
   REJECTED = 'rejected',
 }
+
+export enum CHAT_STATUS {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
