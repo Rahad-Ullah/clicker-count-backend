@@ -201,6 +201,20 @@ const getAllGroupChats = catchAsync(
   },
 );
 
+// get group chat overview
+const getGroupChatOverview = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await ChatServices.getGroupChatOverview();
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Group chat overview retrieved successfully',
+      data: result,
+    });
+  },
+);
+
 export const ChatController = {
   create1To1Chat,
   createGroupChat,
@@ -215,4 +229,5 @@ export const ChatController = {
   getSingleChat,
   getMyChats,
   getAllGroupChats,
+  getGroupChatOverview,
 };

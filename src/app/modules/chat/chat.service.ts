@@ -554,9 +554,30 @@ const getAllGroupChatsFromDB = async (query: Record<string, unknown>) => {
     chatQuery.getPaginationInfo(),
   ]);
 
+  return { data, pagination };
+};
+
+// ---------------- get group chat overview ----------------
+const getGroupChatOverview = async () => {
+  // get total, active, inactive group chat counts
+  const [totalChats, activeChats, inactiveChats] = await Promise.all([
+    Chat.countDocuments({ isDeleted: false, isGroupChat: true }),
+    Chat.countDocuments({
+      isDeleted: false,
+      isGroupChat: true,
+      status: CHAT_STATUS.ACTIVE,
+    }),
+    Chat.countDocuments({
+      isDeleted: false,
+      isGroupChat: true,
+      status: CHAT_STATUS.INACTIVE,
+    }),
+  ]);
+
   return {
-    data,
-    pagination,
+    totalChats,
+    activeChats,
+    inactiveChats,
   };
 };
 
@@ -574,4 +595,5 @@ export const ChatServices = {
   getSingleChatFromDB,
   getChatsByUserIdFromDB,
   getAllGroupChatsFromDB,
+  getGroupChatOverview,
 };

@@ -95,4 +95,11 @@ router.get(
   ChatController.getAllGroupChats,
 );
 
+// get group chat overview
+router.get(
+  '/group-chat-overview',
+  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  ChatController.getGroupChatOverview,
+);
+
 export const ChatRoutes = router;
