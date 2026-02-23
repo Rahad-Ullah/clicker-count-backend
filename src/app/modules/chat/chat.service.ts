@@ -11,6 +11,7 @@ import { Types } from 'mongoose';
 import {
   CHAT_ACCESS_TYPE,
   CHAT_PRIVACY,
+  CHAT_STATUS,
   REQUEST_STATUS,
 } from './chat.constant';
 import QueryBuilder from '../../builder/QueryBuilder';
@@ -21,7 +22,7 @@ import { MessageServices } from '../message/message.service';
 import { MESSAGE_TYPE } from '../message/message.constant';
 
 // ---------------- create 1-to-1 chat ----------------
-export const create1To1ChatIntoDB = async (payload: {
+const create1To1ChatIntoDB = async (payload: {
   participant: string;
   author: string;
 }) => {
@@ -69,7 +70,7 @@ export const create1To1ChatIntoDB = async (payload: {
 };
 
 // ---------------- create group chat ----------------
-export const createGroupChatIntoDB = async (payload: IChat) => {
+const createGroupChatIntoDB = async (payload: IChat) => {
   // 1. push author to participants if not exist
   if (!payload.participants.includes(payload.author)) {
     payload.participants.push(payload.author);
@@ -96,7 +97,7 @@ export const createGroupChatIntoDB = async (payload: IChat) => {
 };
 
 // ---------------- update chat ----------------
-export const updateChatIntoDB = async (chatId: string, payload: IChat) => {
+const updateChatIntoDB = async (chatId: string, payload: IChat) => {
   const chat = await Chat.findById(chatId);
   if (!chat) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Chat not found!');
@@ -108,6 +109,26 @@ export const updateChatIntoDB = async (chatId: string, payload: IChat) => {
   if (payload.avatarUrl && chat.avatarUrl && result) {
     await unlinkFile(chat.avatarUrl);
   }
+  return result;
+};
+
+// ---------------- toggle chat status ----------------
+const toggleChatStatus = async (chatId: string) => {
+  // check if the chat exists
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Chat not found!');
+  }
+  const result = await Chat.findByIdAndUpdate(
+    chatId,
+    {
+      status:
+        chat.status === CHAT_STATUS.ACTIVE
+          ? CHAT_STATUS.INACTIVE
+          : CHAT_STATUS.ACTIVE,
+    },
+    { new: true },
+  );
   return result;
 };
 
@@ -518,6 +539,7 @@ export const ChatServices = {
   create1To1ChatIntoDB,
   createGroupChatIntoDB,
   updateChatIntoDB,
+  toggleChatStatus,
   addMemberToChatIntoDB,
   removeMemberFromChat,
   joinChatIntoDB,

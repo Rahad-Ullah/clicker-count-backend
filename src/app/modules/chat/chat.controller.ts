@@ -51,7 +51,19 @@ const updateChat = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Chat created successfully',
+    message: 'Chat updated successfully',
+    data: result,
+  });
+});
+
+// toggle chat status
+const toggleChatStatus = catchAsync(async (req: Request, res: Response) => {
+  const result = await ChatServices.toggleChatStatus(req.params.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Chat status toggled successfully',
     data: result,
   });
 });
@@ -66,7 +78,7 @@ const addMemberToChat = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Chat created successfully',
+    message: 'Chat members added successfully',
     data: result,
   });
 });
@@ -82,7 +94,7 @@ const removeMemberFromChat = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Chat created successfully',
+    message: 'Chat member removed successfully',
     data: result,
   });
 });
@@ -94,7 +106,7 @@ const joinChat = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: (result as any)?.message || 'Chat created successfully',
+    message: (result as any)?.message || 'Chat member joined successfully',
     data: result,
   });
 });
@@ -106,7 +118,7 @@ const leaveChat = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Chat created successfully',
+    message: 'Chat member left successfully',
     data: result,
   });
 });
@@ -118,7 +130,7 @@ const deleteChat = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Chat created successfully',
+    message: 'Chat deleted successfully',
     data: result,
   });
 });
@@ -134,7 +146,7 @@ const sendGreetingsToUser = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Chat created successfully',
+    message: 'Greetings sent successfully',
     data: result,
   });
 });
@@ -178,6 +190,7 @@ export const ChatController = {
   create1To1Chat,
   createGroupChat,
   updateChat,
+  toggleChatStatus,
   addMemberToChat,
   removeMemberFromChat,
   joinChat,

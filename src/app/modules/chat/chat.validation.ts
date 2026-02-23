@@ -52,6 +52,15 @@ const updateChatValidation = z.object({
     .strict(),
 });
 
+// toggle chat status
+const toggleChatStatusValidation = z.object({
+  params: z
+    .object({
+      id: objectId('Invalid chat ID'),
+    })
+    .strict(),
+});
+
 // add member to chat
 const addMemberToChatValidation = z.object({
   params: z.object({
@@ -64,7 +73,7 @@ const addMemberToChatValidation = z.object({
         .min(1, 'Minimum 1 participants are required'),
     })
     .strict(),
-})
+});
 
 // remove member from chat
 const removeMemberFromChatValidation = z.object({
@@ -76,7 +85,7 @@ const removeMemberFromChatValidation = z.object({
       member: objectId('Invalid participant ID'),
     })
     .strict(),
-})
+});
 
 // send greetings
 const sendGreetingsToUserValidation = z.object({
@@ -86,13 +95,14 @@ const sendGreetingsToUserValidation = z.object({
       text: z.string().nonempty('Message content is required'),
     })
     .strict(),
-})
+});
 
 export const ChatValidations = {
   create1to1ChatValidation,
   createGroupChatValidation,
   updateChatValidation,
+  toggleChatStatusValidation,
   addMemberToChatValidation,
   removeMemberFromChatValidation,
-  sendGreetingsToUserValidation
+  sendGreetingsToUserValidation,
 };

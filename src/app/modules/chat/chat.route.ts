@@ -33,6 +33,14 @@ router.patch(
   ChatController.updateChat,
 );
 
+// toggle chat status
+router.patch(
+  '/toggle-status/:id',
+  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  validateRequest(ChatValidations.toggleChatStatusValidation),
+  ChatController.toggleChatStatus,
+);
+
 // add member to chat
 router.patch(
   '/add-member/:id',
