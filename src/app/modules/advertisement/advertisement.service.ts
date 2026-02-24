@@ -10,9 +10,11 @@ import mongoose from 'mongoose';
 import unlinkFile from '../../../shared/unlinkFile';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { AD_STATUS, PAYMENT_STATUS } from './advertisement.constants';
-import { User } from '../user/user.model';
 import { Setting } from '../setting/setting.model';
 import { calculateExpireDate } from '../../../util/calculateExpireDate';
+import { User } from '../user/user.model';
+import { USER_ROLES, USER_STATUS } from '../user/user.constant';
+import { sendNotifications } from '../../../helpers/notificationHelper';
 
 // ----------------- create advertisement -----------------
 
@@ -54,6 +56,23 @@ export const createAdvertisementIntoDB = async (payload: IAdvertisement) => {
     createdAd = createdAd[0];
 
     await session.commitTransaction();
+
+    // send notification to admins
+    const admins = await User.find({
+      isDeleted: false,
+      status: USER_STATUS.ACTIVE,
+      role: { $in: [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN] },
+    }).select('_id');
+
+    for (const admin of admins) {
+      sendNotifications({
+        type: 'ADVERTISEMENT_APPROVAL',
+        title: 'New Advertisement Request for Approval',
+        message: `A new advertisement '${createdAd.title}' has been created and is pending your approval.`,
+        receiver: admin._id,
+        referenceId: createdAd._id.toString(),
+      });
+    }
   } catch (error) {
     if (session.inTransaction()) {
       await session.abortTransaction();
