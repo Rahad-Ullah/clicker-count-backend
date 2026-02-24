@@ -20,10 +20,15 @@ router.post(
 // update post
 router.patch(
   '/update/:id',
-  auth(USER_ROLES.USER, USER_ROLES.ADVERTISER),
+  auth(
+    USER_ROLES.USER,
+    USER_ROLES.ADVERTISER,
+    USER_ROLES.ADMIN,
+    USER_ROLES.SUPER_ADMIN,
+  ),
   fileUploadHandler(),
   validateRequest(PostValidations.updatePostValidation),
-  PostController.updatePost
+  PostController.updatePost,
 );
 
 // delete post

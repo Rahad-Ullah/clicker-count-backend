@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { POST_PRIVACY } from './post.constants';
 import { objectId } from '../../../helpers/zodHelper';
+import { USER_STATUS } from '../user/user.constant';
 
 // create post schema
 export const createPostValidation = z.object({
@@ -27,6 +28,7 @@ export const updatePostValidation = z.object({
         .nonempty('Clicker type cannot be empty')
         .optional(),
       privacy: z.nativeEnum(POST_PRIVACY).optional(),
+      status: z.enum([USER_STATUS.ACTIVE, USER_STATUS.INACTIVE]).optional(),
       image: z.any().optional(),
       removedImages: z
         .string()
