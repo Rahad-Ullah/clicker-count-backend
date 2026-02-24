@@ -103,7 +103,68 @@ const getMonthlyUserGrowth = async (query: Record<string, unknown>) => {
   return result;
 };
 
+// ------------- get earning growth -------------
+const getEarningGrowth = async (query: Record<string, unknown>) => {
+  const year = Number(query.year || new Date().getFullYear());
+
+  const result = await Advertisement.aggregate([
+    {
+      $match: {
+        isDeleted: false,
+        paymentStatus: PAYMENT_STATUS.Paid,
+        createdAt: {
+          $gte: new Date(`${year}-01-01`),
+          $lt: new Date(`${year + 1}-01-01`),
+        },
+      },
+    },
+    {
+      $group: {
+        _id: { month: { $month: '$createdAt' } },
+        totalEarnings: { $sum: '$price' },
+      },
+    },
+    {
+      $project: {
+        monthNum: '$_id.month',
+        totalEarnings: 1,
+        _id: 0,
+      },
+    },
+  ]).then(data => {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',    
+      'Nov',
+      'Dec',
+    ];
+
+    return months.map((m, i) => {
+      const monthIndex = i + 1;
+
+      const totalEarnings =
+        data.find(d => d.monthNum === monthIndex)?.totalEarnings || 0;
+
+      return {
+        month: m,
+        totalEarnings,
+      };
+  })
+})
+
+  return result;
+};
+
 export const AnalyticsServices = {
   getOverview,
   getMonthlyUserGrowth,
-};
+  getEarningGrowth,
+}

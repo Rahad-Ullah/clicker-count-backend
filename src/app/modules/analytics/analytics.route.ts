@@ -19,4 +19,11 @@ router.get(
   AnalyticsController.getMonthlyUserGrowth
 );
 
+// get monthly earnings growth
+router.get(
+  '/earning-growth',
+  auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  AnalyticsController.getEarningGrowth
+);
+
 export const analyticsRoutes = router;

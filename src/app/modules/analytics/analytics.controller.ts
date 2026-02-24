@@ -28,7 +28,20 @@ const getMonthlyUserGrowth = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get monthly earnings growth
+const getEarningGrowth = catchAsync(async (req: Request, res: Response) => {
+  const result = await AnalyticsServices.getEarningGrowth(req.query);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Earning growth retrieved successfully',
+    data: result,
+  });
+});
+
 export const AnalyticsController = {
   getOverview,
   getMonthlyUserGrowth,
+  getEarningGrowth,
 };
