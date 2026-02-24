@@ -35,10 +35,12 @@ const getOverview = async () => {
 // get monthly user growth
 const getMonthlyUserGrowth = async (query: Record<string, unknown>) => {
   const year = Number(query.year || new Date().getFullYear());
+
   const result = await User.aggregate([
     {
       $match: {
         isDeleted: false,
+        role: { $in: [USER_ROLES.USER, USER_ROLES.ADVERTISER] }, // Optional: Filter for only these two roles
         createdAt: {
           $gte: new Date(`${year}-01-01`),
           $lt: new Date(`${year + 1}-01-01`),
@@ -47,13 +49,18 @@ const getMonthlyUserGrowth = async (query: Record<string, unknown>) => {
     },
     {
       $group: {
-        _id: { month: { $month: '$createdAt' } },
+        // Group by both month AND role
+        _id: {
+          month: { $month: '$createdAt' },
+          role: '$role',
+        },
         count: { $sum: 1 },
       },
     },
     {
       $project: {
         monthNum: '$_id.month',
+        role: '$_id.role',
         count: 1,
         _id: 0,
       },
@@ -73,9 +80,23 @@ const getMonthlyUserGrowth = async (query: Record<string, unknown>) => {
       'Nov',
       'Dec',
     ];
+
     return months.map((m, i) => {
-      const found = data.find(d => d.monthNum === i + 1);
-      return { month: m, count: found ? found.count : 0 };
+      const monthIndex = i + 1;
+
+      const userCount =
+        data.find(d => d.monthNum === monthIndex && d.role === USER_ROLES.USER)
+          ?.count || 0;
+      const advertiserCount =
+        data.find(
+          d => d.monthNum === monthIndex && d.role === USER_ROLES.ADVERTISER,
+        )?.count || 0;
+
+      return {
+        month: m,
+        user: userCount,
+        advertiser: advertiserCount,
+      };
     });
   });
 
