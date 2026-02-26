@@ -125,7 +125,7 @@ const deleteAccountFromDB = async (id: string) => {
 
 // get user profile
 const getUserProfileFromDB = async (userId: string) => {
-  const isExistUser = await User.findById(userId);
+  const isExistUser = await User.findById(userId).populate('advertiser').lean();
   if (!isExistUser || isExistUser.isDeleted) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }

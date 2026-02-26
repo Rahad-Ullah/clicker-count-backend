@@ -138,13 +138,14 @@ const verifyAdvertiser = async (payload: {
     );
   }
 
-  await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     { _id: user._id },
     {
       isVerified: true,
       authentication: { oneTimeCode: null, expireAt: null },
     },
-  );
+    { new: true },
+  ).populate('advertiser');
 
   //create access token
   const accessToken = jwtHelper.createToken(
@@ -153,7 +154,7 @@ const verifyAdvertiser = async (payload: {
     config.jwt.jwt_expire_in as string,
   );
 
-  return { accessToken, role: user.role };
+  return { accessToken, role: user.role, user: updatedUser };
 };
 
 // ---------------- update by user id ----------------
