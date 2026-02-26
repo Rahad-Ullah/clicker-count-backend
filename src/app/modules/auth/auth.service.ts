@@ -152,7 +152,7 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
   let data;
 
   if (!isExistUser.isVerified) {
-    await User.findOneAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       { _id: isExistUser._id },
       {
         isVerified: true,
@@ -167,7 +167,7 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
       config.jwt.jwt_expire_in as string,
     );
     message = 'Email verify successfully';
-    data = { accessToken, role: isExistUser.role };
+    data = { accessToken, role: isExistUser.role, user: updatedUser };
   } else {
     await User.findOneAndUpdate(
       { _id: isExistUser._id },

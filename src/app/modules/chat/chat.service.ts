@@ -20,6 +20,7 @@ import { JOIN_REQUEST_STATUS } from '../joinRequest/joinRequest.constants';
 import unlinkFile from '../../../shared/unlinkFile';
 import { MessageServices } from '../message/message.service';
 import { MESSAGE_TYPE } from '../message/message.constant';
+import { calculateDistance } from '../../../util/calculateDistance';
 
 // ---------------- create 1-to-1 chat ----------------
 const create1To1ChatIntoDB = async (payload: {
@@ -470,7 +471,7 @@ const getChatsByUserIdFromDB = async (
     Chat.find(filter)
       .populate({
         path: 'participants',
-        select: 'name image isOnline',
+        select: 'name image isOnline location isLocationVisible',
       })
       .populate({
         path: 'latestMessage',
@@ -483,7 +484,7 @@ const getChatsByUserIdFromDB = async (
       .sort({ updatedAt: -1 }),
     query,
   )
-    .filter()
+    .filter(['lat', 'lng'])
     .fields()
     .paginate();
 
@@ -519,6 +520,21 @@ const getChatsByUserIdFromDB = async (
       const anotherParticipant = chat.participants.find(
         (p: any) => p._id.toString() !== user.id,
       );
+
+      let distanceInKm = null;
+      if (
+        anotherParticipant?.isLocationVisible &&
+        anotherParticipant?.location?.coordinates &&
+        query.lat &&
+        query.lng
+      ) {
+        distanceInKm = calculateDistance(
+          anotherParticipant.location.coordinates[1],
+          anotherParticipant.location.coordinates[0],
+          parseFloat(query.lat as string),
+          parseFloat(query.lng as string),
+        );
+      }
       const { participants, ...rest } = chat;
 
       return {
@@ -526,12 +542,15 @@ const getChatsByUserIdFromDB = async (
         anotherParticipant,
         amIAParticipant: true,
         unreadCount,
+        distanceInKm,
       };
     }
 
     return {
       ...chat,
-      amIAParticipant: chat.participants.some((p: any) => p._id.equals(user.id)),
+      amIAParticipant: chat.participants.some((p: any) =>
+        p._id.equals(user.id),
+      ),
       unreadCount,
     };
   });
