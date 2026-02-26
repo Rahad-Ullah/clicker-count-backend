@@ -442,13 +442,27 @@ const getChatsByUserIdFromDB = async (
   const filter: any = {
     isDeleted: false,
     requestStatus: { $ne: REQUEST_STATUS.REJECTED },
-    participants: user.id,
   };
 
-  if (searchTerm && query.isGroupChat === 'true') {
-    delete filter.participants;
-    filter.privacy = CHAT_PRIVACY.PUBLIC;
-    filter.$or = [{ name: { $regex: searchTerm, $options: 'i' } }];
+  if (searchTerm) {
+    if (query.isGroupChat === 'true') {
+      // Group chat search logic - only filter by chat name for groups
+      filter.chatName = { $regex: searchTerm, $options: 'i' };
+    } else {
+      // 1-to-1 Search Logic
+      const matchingUsers = await User.find({
+        _id: { $ne: user.id },
+        name: { $regex: searchTerm, $options: 'i' },
+      }).select('_id');
+
+      const matchingIds = matchingUsers.map(u => u._id);
+
+      // Match chats where I am a participant AND one of the matching users is also a participant.
+      filter.$and = [
+        { participants: user.id },
+        { participants: { $in: matchingIds } },
+      ];
+    }
   }
 
   // 1️. Base query
@@ -457,13 +471,6 @@ const getChatsByUserIdFromDB = async (
       .populate({
         path: 'participants',
         select: 'name image isOnline',
-        match: {
-          // _id: { $ne: user.id },
-          ...(searchTerm &&
-            !filter.isGroupChat && {
-              name: { $regex: searchTerm, $options: 'i' },
-            }),
-        },
       })
       .populate({
         path: 'latestMessage',
@@ -472,11 +479,11 @@ const getChatsByUserIdFromDB = async (
           path: 'sender',
           select: 'name image',
         },
-      }),
+      })
+      .sort({ updatedAt: -1 }),
     query,
   )
     .filter()
-    .sort() // default: -updatedAt
     .fields()
     .paginate();
 
@@ -486,16 +493,11 @@ const getChatsByUserIdFromDB = async (
     chatQuery.getPaginationInfo(),
   ]);
 
-  // 3️. Remove chats where search filtered out participants
-  const filteredChats = chats.filter(
-    (chat: any) => chat.participants && chat.participants.length > 0,
-  );
-
-  // 4️. Unread counts (only paginated chats)
+  // 3️. Unread counts (only paginated chats)
   const unreadCounts = await Message.aggregate([
     {
       $match: {
-        chat: { $in: filteredChats.map(c => c._id) },
+        chat: { $in: chats.map(c => c._id) },
         seenBy: { $nin: [user.id] },
       },
     },
@@ -509,8 +511,8 @@ const getChatsByUserIdFromDB = async (
 
   const unreadMap = new Map(unreadCounts.map(u => [u._id.toString(), u.count]));
 
-  // 5️⃣ Format response (1-to-1 vs group)
-  const data = filteredChats.map((chat: any) => {
+  // 4️. Format response (1-to-1 vs group)
+  const data = chats.map((chat: any) => {
     const unreadCount = unreadMap.get(chat._id.toString()) || 0;
 
     if (!chat.isGroupChat) {
@@ -522,11 +524,16 @@ const getChatsByUserIdFromDB = async (
       return {
         ...rest,
         anotherParticipant,
+        amIAParticipant: true,
         unreadCount,
       };
     }
 
-    return { ...chat, unreadCount };
+    return {
+      ...chat,
+      amIAParticipant: chat.participants.some((p: any) => p._id.equals(user.id)),
+      unreadCount,
+    };
   });
 
   return {
