@@ -11,7 +11,7 @@ const createPost = catchAsync(async (req: Request, res: Response) => {
   const result = await PostServices.createPostToDB({
     ...req.body,
     user: req.user?.id,
-    photos: images,
+    photos: images || [],
   });
 
   sendResponse(res, {

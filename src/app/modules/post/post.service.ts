@@ -11,9 +11,9 @@ import { POST_PRIVACY } from './post.constants';
 // -------------- create post --------------
 const createPostToDB = async (payload: IPost): Promise<IPost> => {
   // check if photos provided
-  if (!payload.photos || payload.photos.length === 0) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Photos are required');
-  }
+  // if (!payload.photos || payload.photos.length === 0) {
+  //   throw new ApiError(StatusCodes.BAD_REQUEST, 'Photos are required');
+  // }
 
   // get user
   const user = await User.findById(payload.user).lean();
