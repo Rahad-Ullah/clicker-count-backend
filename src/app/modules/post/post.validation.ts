@@ -7,10 +7,7 @@ import { USER_STATUS } from '../user/user.constant';
 export const createPostValidation = z.object({
   body: z
     .object({
-      description: z
-        .string()
-        .nonempty('Description cannot be empty')
-        .optional(),
+      description: z.string().default(''),
       clickerType: z.string().nonempty('Clicker type cannot be empty'),
       privacy: z.nativeEnum(POST_PRIVACY),
       image: z.any(),
@@ -22,10 +19,7 @@ export const createPostValidation = z.object({
 export const updatePostValidation = z.object({
   body: z
     .object({
-      description: z
-        .string()
-        .nonempty('Description cannot be empty')
-        .optional(),
+      description: z.string().optional(),
       clickerType: z
         .string()
         .nonempty('Clicker type cannot be empty')
