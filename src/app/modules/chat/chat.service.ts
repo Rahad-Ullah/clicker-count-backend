@@ -439,16 +439,31 @@ const getChatsByUserIdFromDB = async (
   user: JwtPayload,
   query: Record<string, unknown>,
 ) => {
+  // check if user exists
+  const userExists = await User.exists({
+    _id: user.id,
+    isDeleted: false,
+    status: USER_STATUS.ACTIVE,
+  });
+  if (!userExists) {
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      'User does not exist or not active!',
+    );
+  }
+
+  // pre-filter
   const searchTerm = (query.searchTerm as string)?.trim();
   const filter: any = {
     isDeleted: false,
     requestStatus: { $ne: REQUEST_STATUS.REJECTED },
+    participants: user.id,
   };
 
   if (searchTerm) {
     if (query.isGroupChat === 'true') {
-      // Group chat search logic - only filter by chat name for groups
       filter.chatName = { $regex: searchTerm, $options: 'i' };
+      delete filter.participants; // include public groups that user is not a participant
     } else {
       // 1-to-1 Search Logic
       const matchingUsers = await User.find({
@@ -463,6 +478,8 @@ const getChatsByUserIdFromDB = async (
         { participants: user.id },
         { participants: { $in: matchingIds } },
       ];
+      // clear the original participants filter to avoid conflicts
+      delete filter.participants;
     }
   }
 
@@ -559,7 +576,7 @@ const getChatsByUserIdFromDB = async (
     result: data,
     pagination,
   };
-};
+};;
 
 // ---------------- get all group chats ----------------
 const getAllGroupChatsFromDB = async (query: Record<string, unknown>) => {
