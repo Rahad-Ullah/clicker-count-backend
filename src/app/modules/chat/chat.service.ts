@@ -463,7 +463,12 @@ const getChatsByUserIdFromDB = async (
   if (searchTerm) {
     if (query.isGroupChat === 'true') {
       filter.chatName = { $regex: searchTerm, $options: 'i' };
-      delete filter.participants; // include public groups that user is not a participant
+      filter.$or = [
+        { participants: user.id }, // include groups where user is a participant
+        { privacy: CHAT_PRIVACY.PUBLIC }, // include public groups regardless of participation
+      ];
+      // clear the original participants filter to avoid conflicts
+      delete filter.participants;
     } else {
       // 1-to-1 Search Logic
       const matchingUsers = await User.find({
