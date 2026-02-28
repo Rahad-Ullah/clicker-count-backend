@@ -149,13 +149,24 @@ const updateAdvertisementStatus = async (
     throw new ApiError(StatusCodes.NOT_FOUND, 'Advertisement not found');
   }
 
+  // check if status is being updated
+  if (payload.status && payload.status !== existingAd.status) {
+    // if ad's date is expired, do not allow status update to Active
+    if (payload.status === AD_STATUS.Active && existingAd.endAt < new Date()) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Cannot activate an expired advertisement',
+      );
+    }
+  }
+
   const result = await Advertisement.findByIdAndUpdate(
     id,
     { $set: payload },
     { new: true },
   );
   return result;
-};
+};;
 
 // ----------------- delete advertisement -----------------
 const deleteAdvertisementFromDB = async (id: string) => {

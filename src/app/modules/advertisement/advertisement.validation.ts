@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { objectId } from '../../../helpers/zodHelper';
-import { APPROVAL_STATUS } from './advertisement.constants';
+import { AD_STATUS, APPROVAL_STATUS } from './advertisement.constants';
 
 const createAdvertisementValidation = z.object({
   body: z
@@ -62,10 +62,10 @@ const updateAdvertisementStatusValidation = z.object({
     .strict(),
   body: z
     .object({
-      approvalStatus: z.enum([
-        APPROVAL_STATUS.Approved,
-        APPROVAL_STATUS.Rejected,
-      ]),
+      approvalStatus: z
+        .enum([APPROVAL_STATUS.Approved, APPROVAL_STATUS.Rejected])
+        .optional(),
+      status: z.enum([AD_STATUS.Active, AD_STATUS.Inactive]).optional(),
     })
     .strict(),
 });
