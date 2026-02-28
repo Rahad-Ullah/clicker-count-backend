@@ -127,11 +127,14 @@ const deleteAccountFromDB = async (id: string) => {
 const getUserProfileFromDB = async (userId: string) => {
   const isExistUser = await User.findById(userId).populate('advertiser').lean();
   if (!isExistUser || isExistUser.isDeleted) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      'User not found or has been deleted!',
+    );
   }
   if (isExistUser.status !== USER_STATUS.ACTIVE) {
     throw new ApiError(
-      StatusCodes.BAD_REQUEST,
+      StatusCodes.FORBIDDEN,
       'Your account is inactive or disabled.',
     );
   }
@@ -147,7 +150,7 @@ const getSingleUserFromDB = async (
 ): Promise<Partial<IUser>> => {
   const result = await User.findById(id).lean();
   if (!result) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+    throw new ApiError(StatusCodes.NOT_FOUND, "User doesn't exist!");
   }
 
   // calculate and attach distance from me
