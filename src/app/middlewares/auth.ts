@@ -10,9 +10,9 @@ const auth =
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       let token;
-      const cookiesToken = req.cookies.accessToken;
+      // const cookiesToken = req.cookies.accessToken;
       const headersToken = req.headers.authorization;
-      if (cookiesToken) token = cookiesToken;
+      // if (cookiesToken) token = cookiesToken;
       if (headersToken) token = headersToken;
       if (!token) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
