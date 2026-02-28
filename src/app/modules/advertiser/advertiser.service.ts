@@ -28,19 +28,19 @@ const createAdvertiser = async (payload: IAdvertiser) => {
       throw new ApiError(StatusCodes.BAD_REQUEST, 'User does not exist');
     }
 
-    const existingAdvertiser = await Advertiser.findOne({
-      user: payload.user,
-    }).session(session);
+    // create/update advertiser
+    const createdAdvertiser = await Advertiser.findOneAndUpdate(
+      { user: payload.user },
+      payload,
+      { new: true, upsert: true, session },
+    );
 
-    if (existingAdvertiser) {
+    if (!createdAdvertiser) {
       throw new ApiError(
-        StatusCodes.BAD_REQUEST,
-        'You are already an advertiser',
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        'Advertiser creation failed',
       );
     }
-
-    const advertiser = await Advertiser.create([payload], { session });
-    const createdAdvertiser = advertiser[0];
 
     otp = generateOTP(6);
 
