@@ -567,7 +567,7 @@ const getAllGroupChatsFromDB = async (query: Record<string, unknown>) => {
     Chat.find({
       isDeleted: false,
       isGroupChat: true,
-    }),
+    }).populate('participants', 'name image'),
     query,
   )
     .filter()
