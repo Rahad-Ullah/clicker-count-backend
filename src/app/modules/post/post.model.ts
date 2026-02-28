@@ -11,7 +11,7 @@ const postSchema = new Schema<IPost, PostModel>(
       required: true,
     },
     photos: { type: [String], default: [] },
-    description: { type: String, required: true },
+    description: { type: String, default: '' },
     address: { type: String, required: true },
     location: {
       type: {
@@ -39,7 +39,7 @@ const postSchema = new Schema<IPost, PostModel>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Geospatial index for location queries

@@ -7,7 +7,7 @@ import { USER_STATUS } from '../user/user.constant';
 export const createPostValidation = z.object({
   body: z
     .object({
-      description: z.string().default(''),
+      description: z.string().optional(),
       clickerType: z.string().nonempty('Clicker type cannot be empty'),
       privacy: z.nativeEnum(POST_PRIVACY),
       image: z.any(),
