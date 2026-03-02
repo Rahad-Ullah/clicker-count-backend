@@ -26,7 +26,9 @@ export const createMessage = async (payload: IMessage): Promise<IMessage> => {
   // mark sender as seen
   payload.seenBy = [payload.sender];
 
-  const result = await Message.create(payload);
+  const result = await (
+    await Message.create(payload)
+  ).populate('sender', 'name image');
 
   // emit socket event for new message
   //@ts-ignore
