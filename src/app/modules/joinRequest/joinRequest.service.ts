@@ -107,7 +107,10 @@ const getPendingRequestByChatId = async (
   query: Record<string, any>,
 ) => {
   const requestQuery = new QueryBuilder(
-    JoinRequest.find({ chat: chatId, status: JOIN_REQUEST_STATUS.PENDING }),
+    JoinRequest.find({
+      chat: chatId,
+      status: JOIN_REQUEST_STATUS.PENDING,
+    }).populate('user', 'name email image'),
     query,
   )
     .sort()
