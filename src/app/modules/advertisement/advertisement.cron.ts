@@ -6,6 +6,7 @@ import {
   APPROVAL_STATUS,
 } from './advertisement.constants';
 import { redis } from '../../../config/redis';
+import { sendNotifications } from '../../../helpers/notificationHelper';
 
 export const advertisementStatusCron = () => {
   // Runs every 5 minute
@@ -13,36 +14,60 @@ export const advertisementStatusCron = () => {
     const now = new Date();
 
     try {
-      // 1️⃣ ACTIVATE ADS
-      const activateResult = await Advertisement.updateMany(
-        {
-          status: AD_STATUS.Pending,
-          paymentStatus: PAYMENT_STATUS.Paid,
-          approvalStatus: APPROVAL_STATUS.Approved,
-          startAt: { $lte: now },
-          endAt: { $gt: now },
-          isDeleted: false,
-        },
-        {
-          $set: { status: AD_STATUS.Active },
-        },
-      );
+      // 1. Fetch ads that need to be activated or deactivated
+      const adsToActivate = await Advertisement.find({
+        status: AD_STATUS.Pending,
+        paymentStatus: PAYMENT_STATUS.Paid,
+        approvalStatus: APPROVAL_STATUS.Approved,
+        startAt: { $lte: now },
+        endAt: { $gt: now },
+        isDeleted: false,
+      });
 
-      // 2️⃣ DEACTIVATE ADS
-      const deactivateResult = await Advertisement.updateMany(
-        {
-          status: AD_STATUS.Active,
-          endAt: { $lte: now },
-          isDeleted: false,
-        },
-        {
-          $set: { status: AD_STATUS.Inactive },
-        },
-      );
+      const adsToDeactivate = await Advertisement.find({
+        status: AD_STATUS.Active,
+        endAt: { $lte: now },
+        isDeleted: false,
+      });
 
-      if (activateResult.modifiedCount || deactivateResult.modifiedCount) {
+      // 2. Perform updates if there are documents
+      if (adsToActivate.length > 0) {
+        await Advertisement.updateMany(
+          { _id: { $in: adsToActivate.map(a => a._id) } },
+          { $set: { status: AD_STATUS.Active } },
+        );
+        // Trigger notifications for adsToActivate
+        adsToActivate.forEach(ad => {
+          sendNotifications({
+            type: 'AD_ACTIVATED',
+            title: 'Your advertisement has been started',
+            message: `Your advertisement "${ad.title}" has been started.`,
+            receiver: ad.user,
+            referenceId: ad._id.toString(),
+          });
+        });
+      }
+
+      if (adsToDeactivate.length > 0) {
+        await Advertisement.updateMany(
+          { _id: { $in: adsToDeactivate.map(a => a._id) } },
+          { $set: { status: AD_STATUS.Inactive } },
+        );
+        // Trigger notifications for adsToDeactivate
+        adsToDeactivate.forEach(ad => {
+          sendNotifications({
+            type: 'AD_DEACTIVATED',
+            title: 'Your advertisement has been ended',
+            message: `Your advertisement "${ad.title}" has been ended.`,
+            receiver: ad.user,
+            referenceId: ad._id.toString(),
+          });
+        });
+      }
+
+      if (adsToActivate.length > 0 || adsToDeactivate.length > 0) {
         console.log(
-          `[CRON] Ads activated: ${activateResult.modifiedCount}, Ads deactivated: ${deactivateResult.modifiedCount}`,
+          `[CRON] Ads activated: ${adsToActivate.length}, Ads deactivated: ${adsToDeactivate.length}`,
         );
       }
     } catch (error) {
