@@ -456,6 +456,7 @@ const getChatsByUserIdFromDB = async (
   const searchTerm = (query.searchTerm as string)?.trim();
   const filter: any = {
     isDeleted: false,
+    status: CHAT_STATUS.ACTIVE,
     requestStatus: { $ne: REQUEST_STATUS.REJECTED },
     participants: user.id,
   };
