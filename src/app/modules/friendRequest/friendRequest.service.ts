@@ -90,7 +90,10 @@ const updateFriendRequest = async (
 
     await session.withTransaction(async () => {
       // 1. Check if friend request exists
-      const existingRequest = await FriendRequest.findById(id).session(session);
+      const existingRequest = await FriendRequest.findById(id)
+        .populate('sender', 'name')
+        .populate('receiver', 'name')
+        .session(session);
 
       if (!existingRequest) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'Friend request not found');
@@ -113,8 +116,16 @@ const updateFriendRequest = async (
                 friend: existingRequest.receiver,
               },
             ],
-            { session }
+            { session },
           );
+          // send notification to sender
+          await sendNotifications({
+            type: 'FRIEND_REQUEST_ACCEPTED',
+            title: 'Friend Request Accepted',
+            message: `${(existingRequest.receiver as any).name || 'Someone'} accepted your friend request`,
+            receiver: existingRequest.sender,
+            referenceId: existingRequest.receiver.toString(),
+          });
         }
       }
 
