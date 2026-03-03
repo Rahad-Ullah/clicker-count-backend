@@ -7,11 +7,18 @@ import { FRIEND_REQUEST_STATUS } from './friendRequest.constants';
 import { Friendship } from '../friendship/friendship.model';
 import QueryBuilder from '../../builder/QueryBuilder';
 import mongoose from 'mongoose';
+import { sendNotifications } from '../../../helpers/notificationHelper';
 
 // --------------- create friend request ---------------
 const createFriendRequest = async (
-  payload: IFriendRequest
+  payload: IFriendRequest,
 ): Promise<IFriendRequest> => {
+  // check if the sender exists
+  const existingSender = await User.findById(payload.sender).select('_id name');
+  if (!existingSender) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Sender does not exist');
+  }
+  
   // check if the receiver exists
   const existingReceiver = await User.exists({ _id: payload.receiver });
   if (!existingReceiver) {
@@ -28,7 +35,7 @@ const createFriendRequest = async (
   if (existingFriendship) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'You are already friends with this user'
+      'You are already friends with this user',
     );
   }
 
@@ -41,7 +48,7 @@ const createFriendRequest = async (
   if (existingRequest) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'You have a pending friend request to this user'
+      'You have a pending friend request to this user',
     );
   }
 
@@ -57,8 +64,18 @@ const createFriendRequest = async (
     },
     { upsert: true, new: true },
   );
+
+  // send notification to receiver
+  await sendNotifications({
+    type: 'FRIEND_REQUEST',
+    title: 'Friend Request',
+    message: `${existingSender.name} sent you a friend request`,
+    receiver: payload.receiver,
+    referenceId: payload.sender.toString(),
+  });
+
   return result;
-};
+};;
 
 // ------------- update friend request -------------
 
