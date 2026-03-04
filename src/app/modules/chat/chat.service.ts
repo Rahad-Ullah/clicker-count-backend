@@ -542,11 +542,11 @@ const getChatsByUserIdFromDB = async (
     },
     user: user.id,
   })
-    .select('chat status')
+    .select('_id chat status')
     .lean();
 
   const joinRequestMap = new Map(
-    joinRequests.map((jr: any) => [jr.chat.toString(), jr.status]),
+    joinRequests.map((jr: any) => [jr.chat.toString(), jr]),
   );
 
   // 5️. Format response (1-to-1 vs group)
@@ -588,7 +588,7 @@ const getChatsByUserIdFromDB = async (
       amIAParticipant: chat.participants.some((p: any) =>
         p._id.equals(user.id),
       ),
-      joinRequestStatus: joinRequestMap.get(chat._id.toString()) || null,
+      joinRequest: joinRequestMap.get(chat._id.toString()) || null,
       unreadCount,
     };
   });
