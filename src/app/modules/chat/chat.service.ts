@@ -535,7 +535,21 @@ const getChatsByUserIdFromDB = async (
 
   const unreadMap = new Map(unreadCounts.map(u => [u._id.toString(), u.count]));
 
-  // 4️. Format response (1-to-1 vs group)
+  // 4️. Fetch join requests for these chats
+  const joinRequests = await JoinRequest.find({
+    chat: {
+      $in: chats.filter((c: any) => c.isGroupChat).map((c: any) => c._id),
+    },
+    user: user.id,
+  })
+    .select('chat status')
+    .lean();
+
+  const joinRequestMap = new Map(
+    joinRequests.map((jr: any) => [jr.chat.toString(), jr.status]),
+  );
+
+  // 5️. Format response (1-to-1 vs group)
   const data = chats.map((chat: any) => {
     const unreadCount = unreadMap.get(chat._id.toString()) || 0;
 
@@ -574,6 +588,7 @@ const getChatsByUserIdFromDB = async (
       amIAParticipant: chat.participants.some((p: any) =>
         p._id.equals(user.id),
       ),
+      joinRequestStatus: joinRequestMap.get(chat._id.toString()) || null,
       unreadCount,
     };
   });
@@ -582,7 +597,7 @@ const getChatsByUserIdFromDB = async (
     result: data,
     pagination,
   };
-};;
+};
 
 // ---------------- get all group chats ----------------
 const getAllGroupChatsFromDB = async (query: Record<string, unknown>) => {
